@@ -1,0 +1,25 @@
+{
+  "name": "talentusinitalload",
+  "version": "1.0.0",
+  "description": "This process performs an initial load data from HCM to TalentusDB on Azure Cloud in order to populate the database with the data needed to star designing the processes to integrate several systems.",
+  "main": "index.js",
+  "scripts": {
+    "start": "SET NODE_ENV=development & node server.js",
+    "staging": "NODE_ENV=staging node server.js",
+    "production": "NODE_ENV=production node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "caescobar",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.2",
+    "axios": "^0.18.0",
+    "config-js": "^1.1.10",
+    "dotenv": "^8.0.0",
+    "express": "^4.16.4",
+    "mssql": "^5.1.0",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {},
+  "keywords": []
+}
