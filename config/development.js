@@ -4,7 +4,8 @@ const config = {
          auth:{
              username: "Integration.Specialist",
              password: "Welcome2019"
-           }
+           },
+        pagesize: 600
        },
      dbConfig:{
          host: "sql-int-tibco-pass.database.windows.net",
@@ -13,12 +14,13 @@ const config = {
          database: "TalentusDB",
          port: 1433,
          options: {        
-              encrypt: true
+              encrypt: true,
+              requestTimeout: -1
           },
           pool: {
-              max: 10,
+              max: 1000,
               min: 0,
-              idleTimeoutMillis: 30000
+              idleTimeoutMillis: 300000
           }
        }   
  };

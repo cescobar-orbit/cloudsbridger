@@ -20,9 +20,9 @@ const getJobs = async (config) =>
 
 const getJobFamilies = async (config) => 
 {
-    const {baseURL, auth} = config;
+    const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "jobFamilies", 
+          const response = await axios({ method: "GET", url: baseURL + "jobFamilies?limit="+pagesize, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',

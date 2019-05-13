@@ -1,7 +1,7 @@
 'use strict'
 const mssql = require('mssql');
 
-const setJob = (ctx, job) => {
+const setJob = async (ctx, jobs) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -10,51 +10,50 @@ const setJob = (ctx, job) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-    new mssql.ConnectionPool(config).connect().then(pool => {
-        const request = pool.request();
-        request.input('JobId', mssql.BigInt, job.JobId);
-        request.input('JobName', mssql.VarChar(240), job.Name);
-        request.input('JobCode', mssql.VarChar(30), job.JobCode);
-        request.input('JobFamilyId', mssql.BigInt, job.JobFamilyId);
-        request.input('EffectiveStartDate', mssql.VarChar(30), job.EffectiveStartDate);
-        request.input('EffectiveEndDate', mssql.VarChar(30), job.EffectiveEndDate);
-        request.input('ActiveStatus', mssql.VarChar(30), job.ActiveStatus);
-        request.input('SetId', mssql.BigInt, job.SetId);
-        request.input('ManagerLevel', mssql.VarChar(30), job.ManagerLevel);
-        request.input('ApprovalAuthority', mssql.Int, job.ApprovalAuthority);
-        request.input('RegularTemporary', mssql.VarChar(30), job.RegularTemporary);
-        request.input('MedicalCheckupRequired', mssql.VarChar(30), job.MedicalCheckupRequired);
-        request.input('JobFunctionCode', mssql.VarChar(30), job.JobFunctionCode);
-        request.input('FullPartTime', mssql.VarChar(30), job.FullPartTime);
-        request.input('CreationDate', mssql.VarChar(30), job.CreationDate);
-        request.input('LastUpdateDate', mssql.VarChar(30), job.LastUpdateDate);
 
-        return request.query`usp_TALENTUS_INS_Job 
-                @JobId,
-                @JobName, 
-                @JobCode,
-                @JobFamilyId,
-                @EffectiveStartDate,
-                @EffectiveEndDate,
-                @ActiveStatus,
-                @SetId,
-                @ManagerLevel,
-                @ApprovalAuthority,
-                @RegularTemporary,
-                @MedicalCheckupRequired,
-                @JobFunctionCode,
-                @FullPartTime,
-                @CreationDate,
-                @LastUpdateDate`;
+    const pool = await new mssql.ConnectionPool(config).connect();
+    for(const job of jobs)
+    {   
+        const result = pool.request()
+              .input('JobId', mssql.BigInt, job.JobId)
+              .input('JobName', mssql.VarChar(240), job.Name)
+              .input('JobCode', mssql.VarChar(30), job.JobCode)
+              .input('JobFamilyId', mssql.BigInt, job.JobFamilyId)
+              .input('EffectiveStartDate', mssql.VarChar(30), job.EffectiveStartDate)
+              .input('EffectiveEndDate', mssql.VarChar(30), job.EffectiveEndDate)
+              .input('ActiveStatus', mssql.VarChar(30), job.ActiveStatus)
+              .input('SetId', mssql.BigInt, job.SetId)
+              .input('ManagerLevel', mssql.VarChar(30), job.ManagerLevel)
+              .input('ApprovalAuthority', mssql.Int, job.ApprovalAuthority)
+              .input('RegularTemporary', mssql.VarChar(30), job.RegularTemporary)
+              .input('MedicalCheckupRequired', mssql.VarChar(30), job.MedicalCheckupRequired)
+              .input('JobFunctionCode', mssql.VarChar(30), job.JobFunctionCode)
+              .input('FullPartTime', mssql.VarChar(30), job.FullPartTime)
+              .input('CreationDate', mssql.VarChar(30), job.CreationDate)
+              .input('LastUpdateDate', mssql.VarChar(30), job.LastUpdateDate)
+              .query`usp_TALENTUS_INS_Job 
+                        @JobId,
+                        @JobName, 
+                        @JobCode,
+                        @JobFamilyId,
+                        @EffectiveStartDate,
+                        @EffectiveEndDate,
+                        @ActiveStatus,
+                        @SetId,
+                        @ManagerLevel,
+                        @ApprovalAuthority,
+                        @RegularTemporary,
+                        @MedicalCheckupRequired,
+                        @JobFunctionCode,
+                        @FullPartTime,
+                        @CreationDate,
+                        @LastUpdateDate`;
 
-    }).then(result => {
-        console.dir(result)
-    }).catch(err => {
-         console.error(err);
-    });
+        console.dir(Promise.resolve(result));                
+    }
 }
 
-const setJobFamily = (ctx, jobFamily) => {
+const setJobFamily = async (ctx, JobFamilies) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -63,33 +62,31 @@ const setJobFamily = (ctx, jobFamily) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-    new mssql.ConnectionPool(config).connect().then(pool => {
-        const request = pool.request();
-        request.input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId);
-        request.input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName);
-        request.input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode);
-        request.input('ActionReasonId', mssql.BigInt, jobFamily.ActionReasonId);
-        request.input('ActiveStatus', mssql.VarChar(5), jobFamily.ActiveStatus);
-        request.input('EffectiveStartDate', mssql.VarChar(30), jobFamily.EffectiveStartDate);
-        request.input('EffectiveEndDate', mssql.VarChar(30), jobFamily.EffectiveEndDate);
-        request.input('CreationDate', mssql.VarChar(30), jobFamily.CreationDate);
-        request.input('LastUpdateDate', mssql.VarChar(30), jobFamily.LastUpdateDate);
+    const pool = await new mssql.ConnectionPool(config).connect();
+    for(const jobFamily of jobFamilies)
+    {
+        const request = pool.request()
+                .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
+                .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
+                .input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode)
+                .input('ActionReasonId', mssql.BigInt, jobFamily.ActionReasonId)
+                .input('ActiveStatus', mssql.VarChar(5), jobFamily.ActiveStatus)
+                .input('EffectiveStartDate', mssql.VarChar(30), jobFamily.EffectiveStartDate)
+                .input('EffectiveEndDate', mssql.VarChar(30), jobFamily.EffectiveEndDate)
+                .input('CreationDate', mssql.VarChar(30), jobFamily.CreationDate)
+                .input('LastUpdateDate', mssql.VarChar(30), jobFamily.LastUpdateDate)
+                .query`usp_TALENTUS_INS_JobFamily 
+                        @JobFamilyId,
+                        @JobFamilyName, 
+                        @ActionReasonId,
+                        @ActiveStatus,
+                        @EffectiveStartDate,
+                        @EffectiveEndDate,
+                        @CreationDate,
+                        @LastUpdateDate`;
 
-        return request.query`usp_TALENTUS_INS_JobFamily 
-                @JobFamilyId,
-                @JobFamilyName, 
-                @ActionReasonId,
-                @ActiveStatus,
-                @EffectiveStartDate,
-                @EffectiveEndDate,
-                @CreationDate,
-                @LastUpdateDate`;
-
-    }).then(result => {
-        console.dir(result)
-    }).catch(err => {
-         console.error(err);
-    });
+        console.dir(Promise.resolve(result.recordset));
+    }
 }
  module.exports = {
      setJob: setJob,

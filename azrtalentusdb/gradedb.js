@@ -2,7 +2,7 @@
 const mssql = require('mssql');
 
 
-const setGrade = (ctx, grade) => {
+const setGrade = async (ctx, grades) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -11,39 +11,36 @@ const setGrade = (ctx, grade) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-    new mssql.ConnectionPool(config).connect().then(pool => {
-        const request = pool.request();
-        request.input('GradeId', mssql.BigInt, grade.GradeId);
-        request.input('GradeCode', mssql.VarChar(120), grade.GradeCode);
-        request.input('GradeName', mssql.VarChar(240), grade.GradeName);
-        request.input('SetId', mssql.BigInt, grade.SetId);
-        request.input('ActiveStatus', mssql.VarChar(30), grade.ActiveStatus);
-        request.input('CategoryCode', mssql.VarChar(80), grade.CategoryCode);
-        request.input('EffectiveStartDate', mssql.VarChar(10), grade.EffectiveStartDate);
-        request.input('EffectiveEndDate', mssql.VarChar(10), grade.EffectiveEndDate);
-        request.input('CreationDate', mssql.VarChar(30), grade.CreationDate);
-        request.input('LastUpdateDate', mssql.VarChar(30), grade.LastUpdateDate);
-
-        return request.query`usp_TALENTUS_INS_Grade 
-                @GradeId, 
-                @GradeCode,
-                @GradeName,
-                @SetId,
-                @CategoryCode,
-                @ActiveStatus,
-                @EffectiveStartDate,
-                @EffectiveEndDate,
-                @CreationDate,
-                @LastUpdateDate`;
-
-    }).then(result => {
-        console.dir(result)
-    }).catch(err => {
-         console.error(err);
-    });
+    const pool =  await new mssql.ConnectionPool(config).connect();
+    for(const grade of grades)
+    {
+        const result = pool.request()
+              .input('GradeId', mssql.BigInt, grade.GradeId)
+              .input('GradeCode', mssql.VarChar(120), grade.GradeCode)
+              .input('GradeName', mssql.VarChar(240), grade.GradeName)
+              .input('SetId', mssql.BigInt, grade.SetId)
+              .input('ActiveStatus', mssql.VarChar(30), grade.ActiveStatus)
+              .input('CategoryCode', mssql.VarChar(80), grade.CategoryCode)
+              .input('EffectiveStartDate', mssql.VarChar(10), grade.EffectiveStartDate)
+              .input('EffectiveEndDate', mssql.VarChar(10), grade.EffectiveEndDate)
+              .input('CreationDate', mssql.VarChar(30), grade.CreationDate)
+              .input('LastUpdateDate', mssql.VarChar(30), grade.LastUpdateDate)
+              .query`usp_TALENTUS_INS_Grade 
+                        @GradeId, 
+                        @GradeCode,
+                        @GradeName,
+                        @SetId,
+                        @CategoryCode,
+                        @ActiveStatus,
+                        @EffectiveStartDate,
+                        @EffectiveEndDate,
+                        @CreationDate,
+                        @LastUpdateDate`;
+      console.dir(Promise.resolve(result));
+    }
 }
 
-const setStep = (ctx, gradeId, step) => {
+const setStep = async (ctx, gradeId, steps) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -52,17 +49,18 @@ const setStep = (ctx, gradeId, step) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-    new mssql.ConnectionPool(config).connect().then(pool => {
-        const request = pool.request();
-        request.input('GradeStepId', mssql.BigInt, step.GradeStepId);
-        request.input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate);
-        request.input('EffectiveEndDate', mssql.VarChar(10), step.EffectiveEndDate);
-        request.input('GradeStepName', mssql.VarChar(240), step.GradeStepName);
-        request.input('GradeStepSequence', mssql.Int, step.GradeStepSequence);
-        request.input('CeilingStepFlag', mssql.VarChar(5), step.CeilingStepFlag);
-        request.input('GradeId', mssql.BigInt, gradeId);
-
-        return request.query`usp_TALENTUS_INS_GradeStep
+    const pool =  await new mssql.ConnectionPool(config).connect();        
+    for(const step of steps)
+    {
+     const result = pool.request()
+        .input('GradeStepId', mssql.BigInt, step.GradeStepId)
+        .input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate)
+        .input('EffectiveEndDate', mssql.VarChar(10), step.EffectiveEndDate)
+        .input('GradeStepName', mssql.VarChar(240), step.GradeStepName)
+        .input('GradeStepSequence', mssql.Int, step.GradeStepSequence)
+        .input('CeilingStepFlag', mssql.VarChar(5), step.CeilingStepFlag)
+        .input('GradeId', mssql.BigInt, gradeId)
+        .query`usp_TALENTUS_INS_GradeStep
                 @GradeStepId, 
                 @GradeStepName,
                 @GradeId,
@@ -70,12 +68,8 @@ const setStep = (ctx, gradeId, step) => {
                 @GradeStepSequence,
                 @EffectiveStartDate,
                 @EffectiveEndDate`;
-
-    }).then(result => {
-        console.dir(result)
-    }).catch(err => {
-         console.error(err);
-    });
+        console.dir(Promise.resolve(result));
+    }
 }
 module.exports = {
     setGrade: setGrade,

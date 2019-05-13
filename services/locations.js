@@ -2,10 +2,10 @@ const axios = require('axios');
 
 const getLocations = async (config) => 
 {
-    const {baseURL, auth} = config;
+    const {baseURL, auth, pagesize} = config;
     try
     {
-     const response = await axios({method: "GET", url: baseURL + "locations", 
+     const response = await axios({method: "GET", url: baseURL + "locations?limit="+pagesize, 
                                   auth: {username: auth.username, password: auth.password},
                                   headers: {
                                      'Accept': 'application/json',

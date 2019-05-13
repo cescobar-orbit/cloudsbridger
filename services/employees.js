@@ -1,10 +1,11 @@
 const axios = require('axios');
 
-const getOrganizations = async (config) => 
+const getEmployees = async (config) => 
 {
-    const {baseURL, auth, pagesize} = config;
-    try{
-        const response = await axios({ method: "GET", url: baseURL + "organizations?limit="+pagesize, 
+    const {baseURL, auth} = config;
+      try{
+          const pagesize =  500;
+          const response = await axios({ method: "GET", url: baseURL + "employees?limit=" + pagesize, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -12,12 +13,12 @@ const getOrganizations = async (config) =>
             }
         });
     
-      //console.log(response.data.items || {}); 
+      console.log(response.data.items || {}); 
       return response.data.items; 
     }
      catch(e){  console.log(e); return {}; }
 }
 
 module.exports = {
-    getOrganizations: getOrganizations
+    getEmployees: getEmployees
 };

@@ -2,9 +2,9 @@ const axios = require('axios');
 
 const getGrades = async (config) => 
 {
-    const {baseURL, auth} = config;
+    const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "grades", 
+          const response = await axios({ method: "GET", url: baseURL + "grades?limit=" + pagesize, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
