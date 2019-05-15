@@ -10,10 +10,11 @@ const setJob = async (ctx, jobs) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-
-    const pool = await new mssql.ConnectionPool(config).connect();
-    for(const job of jobs)
-    {   
+    try
+    {
+     const pool = await new mssql.ConnectionPool(config).connect();
+     for(const job of jobs)
+     {   
         const result = pool.request()
               .input('JobId', mssql.BigInt, job.JobId)
               .input('JobName', mssql.VarChar(240), job.Name)
@@ -49,8 +50,12 @@ const setJob = async (ctx, jobs) => {
                         @CreationDate,
                         @LastUpdateDate`;
 
-        console.dir(Promise.resolve(result));                
-    }
+            const promiseResult = Promise.resolve(result);
+            promiseResult.then(function(value) {
+                console.log(value);
+            });                
+      }
+    } catch(e) { console.error(e); }  
 }
 
 const setJobFamily = async (ctx, JobFamilies) => {
@@ -62,33 +67,40 @@ const setJobFamily = async (ctx, JobFamilies) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-    const pool = await new mssql.ConnectionPool(config).connect();
-    for(const jobFamily of jobFamilies)
+    try
     {
-        const request = pool.request()
-                .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
-                .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
-                .input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode)
-                .input('ActionReasonId', mssql.BigInt, jobFamily.ActionReasonId)
-                .input('ActiveStatus', mssql.VarChar(5), jobFamily.ActiveStatus)
-                .input('EffectiveStartDate', mssql.VarChar(30), jobFamily.EffectiveStartDate)
-                .input('EffectiveEndDate', mssql.VarChar(30), jobFamily.EffectiveEndDate)
-                .input('CreationDate', mssql.VarChar(30), jobFamily.CreationDate)
-                .input('LastUpdateDate', mssql.VarChar(30), jobFamily.LastUpdateDate)
-                .query`usp_TALENTUS_INS_JobFamily 
-                        @JobFamilyId,
-                        @JobFamilyName, 
-                        @ActionReasonId,
-                        @ActiveStatus,
-                        @EffectiveStartDate,
-                        @EffectiveEndDate,
-                        @CreationDate,
-                        @LastUpdateDate`;
+        const pool = await new mssql.ConnectionPool(config).connect();
+        for(const jobFamily of jobFamilies)
+        {
+            const request = pool.request()
+                    .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
+                    .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
+                    .input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode)
+                    .input('ActionReasonId', mssql.BigInt, jobFamily.ActionReasonId)
+                    .input('ActiveStatus', mssql.VarChar(5), jobFamily.ActiveStatus)
+                    .input('EffectiveStartDate', mssql.VarChar(30), jobFamily.EffectiveStartDate)
+                    .input('EffectiveEndDate', mssql.VarChar(30), jobFamily.EffectiveEndDate)
+                    .input('CreationDate', mssql.VarChar(30), jobFamily.CreationDate)
+                    .input('LastUpdateDate', mssql.VarChar(30), jobFamily.LastUpdateDate)
+                    .query`usp_TALENTUS_INS_JobFamily 
+                            @JobFamilyId,
+                            @JobFamilyName, 
+                            @ActionReasonId,
+                            @ActiveStatus,
+                            @EffectiveStartDate,
+                            @EffectiveEndDate,
+                            @CreationDate,
+                            @LastUpdateDate`;
 
-        console.dir(Promise.resolve(result.recordset));
+                const promiseResult = Promise.resolve(result);
+                promiseResult.then(function(value) {
+                    console.log(value);
+                });
+            }
+        }catch(e) { console.error(e); }
     }
-}
- module.exports = {
+ 
+    module.exports = {
      setJob: setJob,
      setJobFamily: setJobFamily
  }

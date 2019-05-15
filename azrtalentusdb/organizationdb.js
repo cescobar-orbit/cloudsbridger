@@ -11,9 +11,11 @@ const setOrganization = async (ctx, organizations) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
     
-    const pool = await new mssql.ConnectionPool(config).connect();
-    for(const organization of organizations)
+    try
     {
+     const pool = await new mssql.ConnectionPool(config).connect();
+     for(const organization of organizations)
+     {
        const result = await pool.request()
                          .input('OrganizationId', mssql.BigInt, organization.OrganizationId)
                          .input('OrganizationCode', mssql.VarChar(120), organization.OrgCode)
@@ -38,8 +40,13 @@ const setOrganization = async (ctx, organizations) => {
                                     @EffectiveEndDate,
                                     @CreationDate,
                                     @LastUpdateDate`;
-        console.dir(Promise.resolve(result));                            
-    }
+        
+        const promiseResult = Promise.resolve(result);
+              promiseResult.then(function(value) {
+                            console.log(value);
+              });                           
+      }
+    } catch(e) { console.error(e); } 
 }
 
 module.exports = {
