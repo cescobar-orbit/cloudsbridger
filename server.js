@@ -72,8 +72,8 @@ app.get('/workstructures/grades',  async (req, res) => {
 
 app.get('/workstructures/positions', async (req, res) => {
     const positions = await position.getPositions(cfg.hcmAPI);
-    console.log(positions);
-    //positionsdb.setJob(cfg.dbConfig, positions); 
+    //console.log(positions);
+    positiondb.setPosition(cfg.dbConfig, positions); 
 });
 
 app.get('/workstructures/employees', async (req, res) => {
