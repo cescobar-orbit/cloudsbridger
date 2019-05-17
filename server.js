@@ -67,7 +67,24 @@ app.get('/workstructures/grades',  async (req, res) => {
           const steps = await grade.getSteps(cfg.hcmAPI, link);
           gradedb.setStep(cfg.dbConfig, data.GradeId, steps);
       }
-  }
+    }
+});
+
+ app.get('/workstructures/gradeRates',  async (req, res) => { 
+    const rates = await grade.getRates(cfg.hcmAPI);
+    //console.log(rates);
+    gradedb.setRate(cfg.dbConfig, rates);
+    for(const data of rates) 
+    { 
+      const rvLinks = data.links.filter(i => { return i.name === 'rateValues'; })
+                          .map(urls => { return urls.href; });
+      for(const link of rvLinks) { 
+          console.log(link); 
+          const values = await grade.getRateValues(cfg.hcmAPI, link);
+          //console.log(values);
+          gradedb.setRateValue(cfg.dbConfig, values);
+      }
+    } 
 });
 
 app.get('/workstructures/positions', async (req, res) => {
