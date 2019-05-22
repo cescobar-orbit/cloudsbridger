@@ -49,6 +49,38 @@ const setOrganization = async (ctx, organizations) => {
     } catch(e) { console.error(e); } 
 }
 
+const updateFlexfield = async (ctx, orgFlexfields) => {
+  const config = {};
+  config.server = ctx.host;
+  config.user = ctx.username;
+  config.password = ctx.password;
+  config.database = ctx.database;
+  config.options = ctx.options;
+  config.pool = ctx.pool;
+  
+  try
+  {
+   const pool = await new mssql.ConnectionPool(config).connect();
+   for(const flexField of orgFlexfields)
+   {
+     const result = await pool.request()
+                       .input('OrganizationId', mssql.BigInt, flexField.OrganizationId)
+                       .input('CostCenter', mssql.VarChar(50), flexField.CENTROCOSTOS2)
+                       .input('Area', mssql.VarChar(50), flexField.AREA2)
+                       .query`usp_TALENTUS_UDP_OrgFlexFields 
+                                  @OrganizationId,
+                                  @CostCenter, 
+                                  @Area`;
+      
+      const promiseResult = Promise.resolve(result);
+            promiseResult.then(function(value) {
+                          console.log(value);
+            });                           
+    }
+  } catch(e) { console.error(e); } 
+}
+
 module.exports = {
-    setOrganization: setOrganization
+    setOrganization: setOrganization,
+    updateFlexfield: updateFlexfield
 }

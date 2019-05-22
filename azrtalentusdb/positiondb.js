@@ -75,11 +75,49 @@ const setPosition = async (ctx, positions) => {
                 console.log(value);
             });
         }
+ 
     } catch(err) {
-       console.err(err);
+       console.error(err);
+    }    
+}
+
+const updateFlexfield = async (ctx, flexField) => {
+    const config = {};
+    config.server = ctx.host;
+    config.user = ctx.username;
+    config.password = ctx.password;
+    config.database = ctx.database;
+    config.options = ctx.options;
+    config.pool = ctx.pool;
+    
+    try
+    {
+        const pool = await new mssql.ConnectionPool(config).connect();
+
+            const result = pool.request()
+                .input('PositionId', mssql.BigInt, flexField.PositionId)
+                .input('Station', mssql.VarChar(150), flexField.ESTACION)
+                .input('BenefitProgram', mssql.VarChar(50), mssql.PROGBENEFPOS)
+                .input('ClassificationCode', mssql.VarChar(200), flexField.TIPOPOSICION)
+                .query`usp_TALENTUS_UDP_PositionFlexFields
+                        @PositionId,
+                        @Station, 
+                        @BenefitProgram,
+                        @ClassificationCode`;
+            
+            const promiseResult = Promise.resolve(result);
+            promiseResult.then(function(value) {
+                console.log(value);
+            });
+        
+      Promise.resolve(pool).then( c => console.log(c) ).reject(err => console.error(err));
+
+    } catch(err) {
+       console.error(err);
     }    
 }
 
 module.exports = {
-    setPosition: setPosition
+    setPosition: setPosition,
+    updateFlexfield: updateFlexfield
 }

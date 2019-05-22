@@ -12,6 +12,7 @@ const gradedb = require('./azrtalentusdb/gradedb');
 const position = require('./services/positions');
 const positiondb = require('./azrtalentusdb/positiondb');
 const employee = require('./services/employees');
+const employeedb = require('./azrtalentusdb/employeedb');
 
 const port = 5000;
 
@@ -40,6 +41,19 @@ app.get('/workstructures/organizations',  async (req, res) => {
       const organizations = await organization.getOrganizations(cfg.hcmAPI);
       //console.log(organizations);
       organizationdb.setOrganization(cfg.dbConfig, organizations);
+      for(const data of organizations) 
+      { 
+        const hrefs = data.links
+                       .filter(i =>{ return i.name === 'OrganizationDFF'; })
+                       .map(urls => { return urls.href; });
+
+        for(const link of hrefs) { 
+            //console.log(link); 
+            const flexFields = await organization.getFlexfields(cfg.hcmAPI, link);
+            console.log(flexFields);
+            organizationdb.updateFlexfield(cfg.dbConfig, flexFields);
+        }
+      }
 });
 
 app.get('/workstructures/jobFamilies', async (req, res) => {
@@ -90,13 +104,47 @@ app.get('/workstructures/grades',  async (req, res) => {
 app.get('/workstructures/positions', async (req, res) => {
     const positions = await position.getPositions(cfg.hcmAPI);
     //console.log(positions);
-    positiondb.setPosition(cfg.dbConfig, positions); 
+    positiondb.setPosition(cfg.dbConfig, positions);
+    for(const data of positions) 
+    { 
+      const hrefs = data.links
+                     .filter(i =>{ return i.name === 'PositionCustomerFlex'; })
+                     .map(urls => { return urls.href; });
+
+      for(const link of hrefs) { 
+          //console.log(link); 
+          const flexFields = await position.getFlexfields(cfg.hcmAPI, link);
+          console.log(flexFields);
+          positiondb.updateFlexfield(cfg.dbConfig, flexFields);
+      }
+    }
 });
 
-app.get('/workstructures/employees', async (req, res) => {
+app.get('/employees', async (req, res) => {
     const employees = await employee.getEmployees(cfg.hcmAPI);
     console.log(employees);
-    //employeedb.setJob(cfg.dbConfig, employees);
+    //employeedb.setPerson(cfg.dbConfig, employees);
+    //employeedb.setEmployee(cfg.dbConfig, employees);
+    for(const data of employees) 
+    { 
+      const hrefs = data.links
+                     .filter(i =>{ return i.name === 'assignments'; })
+                     .map(urls => { return urls.href; });
+
+      for(const link of hrefs) { 
+          console.log(link); 
+          //const empAssignment = await employee.getAssignment(cfg.hcmAPI, link);
+          //console.log(empAssignment);
+          //employeedb.setAssignment(cfg.dbConfig, empAssignment);
+      }
+    }
+});
+
+app.get('/recuiting/candidates', async(req, res) => {
+
+    const candidates = await employee.getCandidates(cfg.hcmAPI);
+    //console.log(candidates); 
+    employeedb.setCandidate(cfg.dbConfig, candidates);
 });
 
 app.listen(port, () => console.log('connecting to HCM End-points') );
