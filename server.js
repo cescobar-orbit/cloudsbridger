@@ -35,12 +35,12 @@ else if(env == 'production') {
 
 app.get('/workstructures/locations', async (req, res) => {
     const locations = await location.getLocations(cfg.hcmAPI);
-    //console.log(locations);
-    const conn = locationdb.setLocation(cfg.dbConfig, locations);
+    console.log(locations);
+  /*  const conn = locationdb.setLocation(cfg.dbConfig, locations);
     const rs = Promise.resolve(conn);
         promiseResult.then(function(value) {
             value.close();
-    });
+    }); */
 });
 
 app.get('/workstructures/organizations',  async (req, res) => { 
@@ -164,7 +164,7 @@ app.get('/employees', async (req, res) => {
     console.log(employees);
     //employeedb.setPerson(cfg.dbConfig, employees);
     //employeedb.setEmployee(cfg.dbConfig, employees);
-    for(const data of employees) 
+   /* for(const data of employees) 
     { 
       const hrefs = data.links
                      .filter(i =>{ return i.name === 'assignments'; })
@@ -177,6 +177,7 @@ app.get('/employees', async (req, res) => {
           //employeedb.setAssignment(cfg.dbConfig, empAssignment);
       }
     }
+    */
 });
 
 app.get('/recuiting/candidates', async(req, res) => {
