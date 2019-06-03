@@ -80,6 +80,7 @@ const setLocation = async (ctx, locations) => {
                 console.log(value);
             });
         }
+       return pool;
     } catch(e) { console.error(e); }
 }
 

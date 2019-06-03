@@ -46,6 +46,7 @@ const setOrganization = async (ctx, organizations) => {
                             console.log(value);
               });                           
       }
+     return pool;
     } catch(e) { console.error(e); } 
 }
 
@@ -77,10 +78,48 @@ const updateFlexfield = async (ctx, orgFlexfields) => {
                           console.log(value);
             });                           
     }
+    return pool;
+  } catch(e) { console.error(e); } 
+}
+
+
+const setDepartmentTree = async (ctx, departmentNodes) => {
+  const config = {};
+  config.server = ctx.host;
+  config.user = ctx.username;
+  config.password = ctx.password;
+  config.database = ctx.database;
+  config.options = ctx.options;
+  config.pool = ctx.pool;
+  
+  try
+  {
+   const pool = await new mssql.ConnectionPool(config).connect();
+
+   for(const department of departmentNodes)
+   {
+     const result = await pool.request()
+                       .input('DepartmentId', mssql.BigInt, department.DepartmentId[0])
+                       .input('DepartmentName', mssql.VarChar(150), department.DepartmentName[0])
+                       .input('ParentDepartmentId', mssql.BigInt, department.ParentDepartmentId[0])
+                       .input('ParentDepartmentName', mssql.VarChar(150), department.ParentDepartmentName[0]) 
+                       .query`usp_TALENTUS_INS_DepartmentTree
+                                  @DepartmentId,
+                                  @DepartmentName,
+                                  @ParentDepartmentId,
+                                  @ParentDepartmentName`;
+      
+      const promiseResult = Promise.resolve(result);
+            promiseResult.then(function(value) {
+                          console.log(value);
+            });                           
+    }
+    return pool;
   } catch(e) { console.error(e); } 
 }
 
 module.exports = {
     setOrganization: setOrganization,
-    updateFlexfield: updateFlexfield
+    updateFlexfield: updateFlexfield,
+    setDepartmentTree: setDepartmentTree
 }

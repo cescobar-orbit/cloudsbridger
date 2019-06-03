@@ -15,73 +15,74 @@ const setPosition = async (ctx, positions) => {
     {
         const pool = await new mssql.ConnectionPool(config).connect();
         for(const position of positions)
-        {
-            const request = pool.request()
-                .input('PositionId', mssql.BigInt, position.PositionId)
-                .input('PositionCode', mssql.VarChar(30), position.PositionCode)
-                .input('PositionName', mssql.VarChar(240), position.Name)
-                .input('PositionType', mssql.VarChar(30), position.PositionType)
-                .input('EffectiveStartDate', mssql.VarChar(10), position.EffectiveStartDate)
-                .input('EffectiveEndDate', mssql.VarChar(10), position.EffectiveEndDate)
-                .input('BusinessUnitId', mssql.BigInt, position.BusinessUnitId)
-                .input('DepartmentId', mssql.BigInt, position.DepartmentId)
-                .input('LocationId', mssql.BigInt, position.LocationId)
-                .input('JobId', mssql.BigInt, position.JobId)
-                .input('EntryGradeId', mssql.BigInt, position.EntryGradeId)
-                .input('EntryStepId', mssql.BigInt, position.EntryStepId)
-                .input('HeadCount', mssql.Int, position.HeadCount)
-                .input('RegularTemporary', mssql.VarChar(30), position.RegularTemporary)
-                .input('FTE', mssql.Int, position.FTE)
-                .input('HiringStatus', mssql.VarChar(30), position.Hiring)
-                .input('FullPartTime', mssql.VarChar(30), position.FullPartTime)
-                .input('OverlapAllowedFlag', mssql.VarChar(5), position.OverlapAllowedFlag)
-                .input('SeasonalFlag', mssql.VarChar(5), position.SeasonalFlag)
-                .input('SeasonalStartDate', mssql.VarChar(30), position.SeasonalStartDate)
-                .input('SeasonalEndDate', mssql.VarChar(30), position.SeasonalEndDate)
-                .input('ProbationPeriod', mssql.VarChar(30), position.ProbationPeriod)
-                .input('SecurityClearance', mssql.VarChar(30), position.CreationDate)
-                .input('CreationDate', mssql.VarChar(30), position.CreationDate)
-                .input('LastUpdateDate', mssql.VarChar(30), position.LastUpdateDate)
+            {
+                const request = await pool.request()
+                    .input('PositionId', mssql.BigInt, position.PositionId)
+                    .input('PositionCode', mssql.VarChar(30), position.PositionCode)
+                    .input('PositionName', mssql.VarChar(240), position.Name)
+                    .input('PositionType', mssql.VarChar(30), position.PositionType)
+                    .input('EffectiveStartDate', mssql.VarChar(10), position.EffectiveStartDate)
+                    .input('EffectiveEndDate', mssql.VarChar(10), position.EffectiveEndDate)
+                    .input('BusinessUnitId', mssql.BigInt, position.BusinessUnitId)
+                    .input('DepartmentId', mssql.BigInt, position.DepartmentId)
+                    .input('LocationId', mssql.BigInt, position.LocationId)
+                    .input('JobId', mssql.BigInt, position.JobId)
+                    .input('EntryGradeId', mssql.BigInt, position.EntryGradeId)
+                    .input('EntryStepId', mssql.BigInt, position.EntryStepId)
+                    .input('HeadCount', mssql.Int, position.HeadCount)
+                    .input('RegularTemporary', mssql.VarChar(30), position.RegularTemporary)
+                    .input('FTE', mssql.Int, position.FTE)
+                    .input('HiringStatus', mssql.VarChar(30), position.Hiring)
+                    .input('FullPartTime', mssql.VarChar(30), position.FullPartTime)
+                    .input('OverlapAllowedFlag', mssql.VarChar(5), position.OverlapAllowedFlag)
+                    .input('SeasonalFlag', mssql.VarChar(5), position.SeasonalFlag)
+                    .input('SeasonalStartDate', mssql.VarChar(30), position.SeasonalStartDate)
+                    .input('SeasonalEndDate', mssql.VarChar(30), position.SeasonalEndDate)
+                    .input('ProbationPeriod', mssql.VarChar(30), position.ProbationPeriod)
+                    .input('SecurityClearance', mssql.VarChar(30), position.CreationDate)
+                    .input('CreationDate', mssql.VarChar(30), position.CreationDate)
+                    .input('LastUpdateDate', mssql.VarChar(30), position.LastUpdateDate)
+    
+                const result = request.query`usp_TALENTUS_INS_Position 
+                        @PositionId,
+                        @PositionCode, 
+                        @PositionName,
+                        @PositionType,
+                        @EffectiveStartDate,
+                        @EffectiveEndDate,
+                        @BusinessUnitId,
+                        @DepartmentId,
+                        @LocationId,
+                        @JobId,
+                        @EntryGradeId,
+                        @EntryStepId,
+                        @HeadCount,
+                        @RegularTemporary,
+                        @FTE,
+                        @HiringStatus,
+                        @FullPartTime,
+                        @OverlapAllowedFlag,
+                        @SeasonalFlag,
+                        @SeasonalStartDate,
+                        @SeasonalEndDate,
+                        @ProbationPeriod,
+                        @SecurityClearance,
+                        @CreationDate,
+                        @LastUpdateDate`;
+                
+                const promiseResult = Promise.resolve(result);
+                promiseResult.then(function(value) {
+                    console.log(value);
+                }).catch(e => console.log(e));
+            }
 
-            const result = request.query`usp_TALENTUS_INS_Position 
-                    @PositionId,
-                    @PositionCode, 
-                    @PositionName,
-                    @PositionType,
-                    @EffectiveStartDate,
-                    @EffectiveEndDate,
-                    @BusinessUnitId,
-                    @DepartmentId,
-                    @LocationId,
-                    @JobId,
-                    @EntryGradeId,
-                    @EntryStepId,
-                    @HeadCount,
-                    @RegularTemporary,
-                    @FTE,
-                    @HiringStatus,
-                    @FullPartTime,
-                    @OverlapAllowedFlag,
-                    @SeasonalFlag,
-                    @SeasonalStartDate,
-                    @SeasonalEndDate,
-                    @ProbationPeriod,
-                    @SecurityClearance,
-                    @CreationDate,
-                    @LastUpdateDate`;
-            
-            const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                console.log(value);
-            });
-        }
- 
+     return pool;
     } catch(err) {
        console.error(err);
     }    
 }
 
-const updateFlexfield = async (ctx, flexField) => {
+const updateFlexfield = async (ctx, flexFields) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -93,12 +94,13 @@ const updateFlexfield = async (ctx, flexField) => {
     try
     {
         const pool = await new mssql.ConnectionPool(config).connect();
-
+        for(item of flexFields) 
+        {
             const result = pool.request()
-                .input('PositionId', mssql.BigInt, flexField.PositionId)
-                .input('Station', mssql.VarChar(150), flexField.ESTACION)
-                .input('BenefitProgram', mssql.VarChar(50), mssql.PROGBENEFPOS)
-                .input('ClassificationCode', mssql.VarChar(200), flexField.TIPOPOSICION)
+                .input('PositionId', mssql.BigInt, item.PositionId)
+                .input('Station', mssql.VarChar(150), item.ESTACION)
+                .input('BenefitProgram', mssql.VarChar(50), item.PROGBENEFPOS)
+                .input('ClassificationCode', mssql.VarChar(200), item.TIPOPOSICION)
                 .query`usp_TALENTUS_UDP_PositionFlexFields
                         @PositionId,
                         @Station, 
@@ -109,8 +111,8 @@ const updateFlexfield = async (ctx, flexField) => {
             promiseResult.then(function(value) {
                 console.log(value);
             });
-        
-      Promise.resolve(pool).then( c => console.log(c) ).reject(err => console.error(err));
+        }
+      return pool;
 
     } catch(err) {
        console.error(err);

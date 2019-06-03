@@ -43,6 +43,7 @@ const setGrade = async (ctx, grades) => {
                     console.log(value);
                   });
         }
+    return pool;
     } catch(e) { console.error(e); }
 }
 
@@ -81,7 +82,7 @@ const setStep = async (ctx, gradeId, steps) => {
                     console.log(value);
                 });
      }
-
+    return pool;
    } catch(e) { console.error(e); } 
 }
 
@@ -130,7 +131,7 @@ const setRate = async (ctx, rates) => {
                   console.log(value);
       });   console.dir(Promise.resolve(result));
    }
-
+  return pool;
  } catch(e) { console.error(e); } 
 
 }
@@ -174,7 +175,7 @@ const setRateValue = async (ctx, rateValues) => {
                   console.log(value);
       });   console.dir(Promise.resolve(result));
    }
-  
+   return pool;
  } catch(e) { console.error(e); } 
 
 }

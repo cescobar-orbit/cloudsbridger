@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const fs = require('fs');
+const Xml2JS = require('xml2js');
+const xpath = require("xml2js-xpath");
 const location = require('./services/locations');
 const organization = require('./services/organizations');
 const job = require('./services/jobs');
@@ -34,13 +36,22 @@ else if(env == 'production') {
 app.get('/workstructures/locations', async (req, res) => {
     const locations = await location.getLocations(cfg.hcmAPI);
     //console.log(locations);
-    locationdb.setLocation(cfg.dbConfig, locations);
+    const conn = locationdb.setLocation(cfg.dbConfig, locations);
+    const rs = Promise.resolve(conn);
+        promiseResult.then(function(value) {
+            value.close();
+    });
 });
 
 app.get('/workstructures/organizations',  async (req, res) => { 
       const organizations = await organization.getOrganizations(cfg.hcmAPI);
       //console.log(organizations);
-      organizationdb.setOrganization(cfg.dbConfig, organizations);
+      const conn = organizationdb.setOrganization(cfg.dbConfig, organizations);
+      const rs = Promise.resolve(conn);
+      rs.then(function(value) {
+          value.close();
+      });
+
       for(const data of organizations) 
       { 
         const hrefs = data.links
@@ -51,7 +62,11 @@ app.get('/workstructures/organizations',  async (req, res) => {
             //console.log(link); 
             const flexFields = await organization.getFlexfields(cfg.hcmAPI, link);
             console.log(flexFields);
-            organizationdb.updateFlexfield(cfg.dbConfig, flexFields);
+            const subConn = organizationdb.updateFlexfield(cfg.dbConfig, flexFields);
+            const rs = Promise.resolve(subConn);
+            rs.then(function(value) {
+                value.close();
+            });
         }
       }
 });
@@ -87,7 +102,12 @@ app.get('/workstructures/grades',  async (req, res) => {
  app.get('/workstructures/gradeRates',  async (req, res) => { 
     const rates = await grade.getRates(cfg.hcmAPI);
     //console.log(rates);
-    gradedb.setRate(cfg.dbConfig, rates);
+    const conn = gradedb.setRate(cfg.dbConfig, rates);
+    const rs = Promise.resolve(conn);
+    rs.then(function(value) {
+        value.close();
+    });
+
     for(const data of rates) 
     { 
       const rvLinks = data.links.filter(i => { return i.name === 'rateValues'; })
@@ -96,7 +116,11 @@ app.get('/workstructures/grades',  async (req, res) => {
           console.log(link); 
           const values = await grade.getRateValues(cfg.hcmAPI, link);
           //console.log(values);
-          gradedb.setRateValue(cfg.dbConfig, values);
+          const subConn = gradedb.setRateValue(cfg.dbConfig, values);
+          const rs = Promise.resolve(subConn);
+            rs.then(function(value) {
+                value.close();
+          });
       }
     } 
 });
@@ -104,20 +128,35 @@ app.get('/workstructures/grades',  async (req, res) => {
 app.get('/workstructures/positions', async (req, res) => {
     const positions = await position.getPositions(cfg.hcmAPI);
     //console.log(positions);
-    positiondb.setPosition(cfg.dbConfig, positions);
+    
+    const extraFields = [];
     for(const data of positions) 
-    { 
-      const hrefs = data.links
-                     .filter(i =>{ return i.name === 'PositionCustomerFlex'; })
-                     .map(urls => { return urls.href; });
+     { 
+       const hrefs = data.links
+                         .filter(i =>{ return i.name === 'PositionCustomerFlex'; })
+                         .map(urls => { return urls.href; });
 
-      for(const link of hrefs) { 
-          //console.log(link); 
-          const flexFields = await position.getFlexfields(cfg.hcmAPI, link);
-          console.log(flexFields);
-          positiondb.updateFlexfield(cfg.dbConfig, flexFields);
-      }
-    }
+       for(const link of hrefs) { 
+           console.log(link); 
+           const flexFields = await position.getFlexfields(cfg.hcmAPI, link);
+           extraFields.push(flexFields);
+       }
+     }
+    console.dir(extraFields);
+
+    //positiondb.setPosition(cfg.dbConfig, positions);
+ 
+    /*    const rs = Promise.resolve(conn);
+    rs.then(function(value) {
+       value.close();
+    }); */
+
+
+/*     const subConn = await positiondb.updateFlexfield(cfg.dbConfig, extraFields);         
+    const promise = Promise.resolve(subConn);
+      promise.then(function(value) {
+          value.close();
+    }); */
 });
 
 app.get('/employees', async (req, res) => {
@@ -145,6 +184,30 @@ app.get('/recuiting/candidates', async(req, res) => {
     const candidates = await employee.getCandidates(cfg.hcmAPI);
     //console.log(candidates); 
     employeedb.setCandidate(cfg.dbConfig, candidates);
+});
+
+app.get('/workstructures/department-tree', (req, res) => {
+   const FileXML = __dirname + "/public/COPA_DEPARTMENT_TREE.xml";
+   fs.readFile(FileXML, 'utf8', (err, xml) => {
+      if(!err) {
+        Xml2JS.parseString(xml, {trim:true}, (error, json) => {
+             // find all elements: returns xml2js JSON of the element
+            const departmentNodes = xpath.find(json, "//DepartmentTreeNode");
+            //console.log(departmentNodes);
+            const conn = organizationdb.setDepartmentTree(cfg.dbConfig, departmentNodes);
+            const rs = Promise.resolve(conn);
+            rs.then(function(value) {
+                value.close();
+            });
+            
+           /*         
+           for(item of matches) {
+                console.log('ParentDepartmentId: ', item.ParentDepartmentId[0], ' DepartmentId: ', item.DepartmentId[0]);
+            } */
+    
+        });
+      } 
+    });
 });
 
 app.listen(port, () => console.log('connecting to HCM End-points') );
