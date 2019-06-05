@@ -161,23 +161,41 @@ app.get('/workstructures/positions', async (req, res) => {
 
 app.get('/employees', async (req, res) => {
     const employees = await employee.getEmployees(cfg.hcmAPI);
-    console.log(employees);
-    //employeedb.setPerson(cfg.dbConfig, employees);
-    //employeedb.setEmployee(cfg.dbConfig, employees);
-   /* for(const data of employees) 
-    { 
-      const hrefs = data.links
-                     .filter(i =>{ return i.name === 'assignments'; })
-                     .map(urls => { return urls.href; });
+    //console.log(employees);
+    
+    // const conn1 = employeedb.setPerson(cfg.dbConfig, employees);
+    // const rs1 = Promise.resolve(conn1);
+    // rs1.then(function(value) {
+    //     value.close();
+    // });
 
-      for(const link of hrefs) { 
-          console.log(link); 
-          //const empAssignment = await employee.getAssignment(cfg.hcmAPI, link);
-          //console.log(empAssignment);
-          //employeedb.setAssignment(cfg.dbConfig, empAssignment);
-      }
+    // const conn2 = employeedb.setEmployee(cfg.dbConfig, employees);
+    // const rs2 = Promise.resolve(conn2);
+    // rs2.then(function(value) {
+    //      value.close();
+    // });
+
+   const assignments = [];
+   for(const data of employees) 
+    { 
+      const link = data.links
+                       .filter( i => { return (i.name = 'assignments') ? i.href: ''; });
+                    //  .filter(i =>{ return i.name === 'assignments'; })
+                    //  .map(urls => { return urls.href; });
+
+     
+       console.log(link[0].href); 
+       const assignmentItem = await employee.getAssignment(cfg.hcmAPI, link[0].href);
+       let assignmentItemAppended = Object.assign(assignmentItem, {PersonNumber: data.PersonNumber});
+       assignments.push(assignmentItemAppended);
     }
-    */
+
+    console.log(assignments);
+    const conn3 = employeedb.setAssignment(cfg.dbConfig, assignments);
+    const rs3 = Promise.resolve(conn3);
+    rs3.then(function(value) {
+          value.close();
+    });
 });
 
 app.get('/recuiting/candidates', async(req, res) => {
