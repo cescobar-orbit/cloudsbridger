@@ -20,6 +20,7 @@ const getEmployees = async (config) =>
 
 const getAssignment = async (config, link) => 
 {
+    //console.log(link);
     const {auth} = config;
     try{
           const response = await axios({ method: "GET", url: link, 
@@ -30,10 +31,10 @@ const getAssignment = async (config, link) =>
             }
           });
     
-      console.log(response.data.items || {}); 
+      //console.log(response.data.items || {}); 
       return response.data.items; 
     }
-     catch(e){  console.log(e); return {}; }
+     catch(e){ console.log(e); return {}; }
 }
 
 const getDirectReports = async(config) => {
