@@ -1,10 +1,10 @@
 const axios = require('axios');
 
-const getOrganizations = async (config) => 
+const getOrganizations = async (config, offset) => 
 {
     const {baseURL, auth, pagesize} = config;
     try{
-        const response = await axios({ method: "GET", url: baseURL + "organizations?limit="+pagesize, 
+        const response = await axios({ method: "GET", url: baseURL + "organizations?limit="+pagesize+'&offset='+offset+'&expand=organizationDFF', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',

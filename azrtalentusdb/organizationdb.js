@@ -2,7 +2,7 @@
 const mssql = require('mssql');
 
  
-const setOrganization = async (ctx, organizations) => {
+const setOrganization = async (ctx, organization) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -14,8 +14,6 @@ const setOrganization = async (ctx, organizations) => {
     try
     {
      const pool = await new mssql.ConnectionPool(config).connect();
-     for(const organization of organizations)
-     {
        const result = await pool.request()
                          .input('OrganizationId', mssql.BigInt, organization.OrganizationId)
                          .input('OrganizationCode', mssql.VarChar(120), organization.OrgCode)
@@ -45,12 +43,12 @@ const setOrganization = async (ctx, organizations) => {
               promiseResult.then(function(value) {
                             console.log(value);
               });                           
-      }
+    
      return pool;
     } catch(e) { console.error(e); } 
 }
 
-const updateFlexfield = async (ctx, orgFlexfields) => {
+const setOrganizationDFF = async (ctx, orgFlexfields) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -120,6 +118,6 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
 
 module.exports = {
     setOrganization: setOrganization,
-    updateFlexfield: updateFlexfield,
+    setOrganizationDFF: setOrganizationDFF,
     setDepartmentTree: setDepartmentTree
 }

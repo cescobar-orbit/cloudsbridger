@@ -2,7 +2,7 @@
 const mssql = require('mssql');
 
 
-const setLocation = async (ctx, locations) => {
+const setLocation = async (ctx, location) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -14,8 +14,7 @@ const setLocation = async (ctx, locations) => {
     try
     {
         const pool = await new mssql.ConnectionPool(config).connect();
-        for(const location of locations)
-        {   
+ 
             const result = pool.request()
                 .input('LocationId', mssql.BigInt, location.LocationId)
                 .input('LocationCode', mssql.VarChar(120), location.LocationCode)
@@ -75,11 +74,10 @@ const setLocation = async (ctx, locations) => {
                         @CreationDate,
                         @LastUpdateDate`;
 
-            const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
+            Promise.resolve(result).then(function(value) {
                 console.log(value);
             });
-        }
+    
        return pool;
     } catch(e) { console.error(e); }
 }

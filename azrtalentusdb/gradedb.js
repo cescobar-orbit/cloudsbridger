@@ -2,7 +2,7 @@
 const mssql = require('mssql');
 
 
-const setGrade = async (ctx, grades) => {
+const setGrade = async (ctx, grade) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -13,8 +13,7 @@ const setGrade = async (ctx, grades) => {
 
     try{
       const pool =  await new mssql.ConnectionPool(config).connect();
-      for(const grade of grades)
-      {
+      
         const result = pool.request()
               .input('GradeId', mssql.BigInt, grade.GradeId)
               .input('GradeCode', mssql.VarChar(120), grade.GradeCode)
@@ -38,11 +37,8 @@ const setGrade = async (ctx, grades) => {
                         @CreationDate,
                         @LastUpdateDate`;
             
-            const promiseResult = Promise.resolve(result);
-                  promiseResult.then(function(value) {
-                    console.log(value);
-                  });
-        }
+            Promise.resolve(result).then(function(value) { console.log(value); });
+        
     return pool;
     } catch(e) { console.error(e); }
 }

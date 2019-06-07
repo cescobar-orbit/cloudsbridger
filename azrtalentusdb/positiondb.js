@@ -82,7 +82,7 @@ const setPosition = async (ctx, positions) => {
     }    
 }
 
-const updateFlexfield = async (ctx, flexFields) => {
+const setPositionDFF = async (ctx,positionDFF) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -94,13 +94,12 @@ const updateFlexfield = async (ctx, flexFields) => {
     try
     {
         const pool = await new mssql.ConnectionPool(config).connect();
-        for(item of flexFields) 
-        {
+    
             const result = pool.request()
-                .input('PositionId', mssql.BigInt, item.PositionId)
-                .input('Station', mssql.VarChar(150), item.ESTACION)
-                .input('BenefitProgram', mssql.VarChar(50), item.PROGBENEFPOS)
-                .input('ClassificationCode', mssql.VarChar(200), item.TIPOPOSICION)
+                .input('PositionId', mssql.BigInt, positionDFF.PositionId)
+                .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
+                .input('BenefitProgram', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
+                .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
                 .query`usp_TALENTUS_UDP_PositionFlexFields
                         @PositionId,
                         @Station, 
@@ -111,7 +110,6 @@ const updateFlexfield = async (ctx, flexFields) => {
             promiseResult.then(function(value) {
                 console.log(value);
             });
-        }
       return pool;
 
     } catch(err) {
@@ -121,5 +119,5 @@ const updateFlexfield = async (ctx, flexFields) => {
 
 module.exports = {
     setPosition: setPosition,
-    updateFlexfield: updateFlexfield
+    setPositionDFF: setPositionDFF
 }

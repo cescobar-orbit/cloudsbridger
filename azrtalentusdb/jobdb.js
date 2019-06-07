@@ -1,7 +1,7 @@
 'use strict'
 const mssql = require('mssql');
 
-const setJob = async (ctx, jobs) => {
+const setJob = async (ctx, job) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -13,8 +13,7 @@ const setJob = async (ctx, jobs) => {
     try
     {
      const pool = await new mssql.ConnectionPool(config).connect();
-     for(const job of jobs)
-     {   
+    
         const result = pool.request()
               .input('JobId', mssql.BigInt, job.JobId)
               .input('JobName', mssql.VarChar(240), job.Name)
@@ -50,15 +49,14 @@ const setJob = async (ctx, jobs) => {
                         @CreationDate,
                         @LastUpdateDate`;
 
-            const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
+            Promise.resolve(result).then(function(value) {
                 console.log(value);
             });                
-      }
+      return pool;
     } catch(e) { console.error(e); }  
 }
 
-const setJobFamily = async (ctx, JobFamilies) => {
+const setJobFamily = async (ctx, JobFamily) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -70,8 +68,7 @@ const setJobFamily = async (ctx, JobFamilies) => {
     try
     {
         const pool = await new mssql.ConnectionPool(config).connect();
-        for(const jobFamily of jobFamilies)
-        {
+        
             const request = pool.request()
                     .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
                     .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
@@ -92,11 +89,10 @@ const setJobFamily = async (ctx, JobFamilies) => {
                             @CreationDate,
                             @LastUpdateDate`;
 
-                const promiseResult = Promise.resolve(result);
-                promiseResult.then(function(value) {
+                Promise.resolve(result).then(function(value) {
                     console.log(value);
                 });
-            }
+            return pool;
         }catch(e) { console.error(e); }
     }
  

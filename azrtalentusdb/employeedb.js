@@ -146,7 +146,7 @@ const setEmployee = async (ctx, employees) => {
                        .input('PeriodType', mssql.VarChar(10), emp.PeriodType)
                        .input('UserName', mssql.VarChar(100), emp.UserName)
                        .input('WorkEmail', mssql.VarChar(240), emp.WorkEmail)
-                       .input('HireDate', mssql.VarChar(10), emp.OriginalHireDate)
+                       .input('HireDate', mssql.VarChar(10), emp.HireDate)
                        .input('TerminationDate', mssql.VarChar(10), emp.TerminationDate)
                        .input('Honors', mssql.VarChar(80), emp.Honors)
                        .input('LegalEntityId', mssql.BigInt, emp.LegalEntityId)
@@ -190,8 +190,7 @@ const setEmployee = async (ctx, employees) => {
                                   @CreationDate,
                                   @LastUpdateDate`;
       
-            const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
+            Promise.resolve(result).then(function(value) {
               console.log(value);
             });                           
     }
@@ -199,7 +198,7 @@ const setEmployee = async (ctx, employees) => {
   } catch(e) { console.error(e); } 
 }
 
-const setAssignment = async (ctx, assignments) => {
+const setAssignment = async (ctx, assignment) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -213,8 +212,7 @@ try
 
    console.log(assignments);
    const pool = await new mssql.ConnectionPool(config).connect();
-   for(const assignment of assignments)
-   {
+   
     console.log(assignment);
     const result = await pool.request()
                      .input('AssignmentNumber', mssql.VarChar(30), assignment.AssignmentNumber)
@@ -314,11 +312,8 @@ try
                             @CreationDate,
                             @LastUpdateDate`;
     
-    const promiseResult = Promise.resolve(result);
-          promiseResult.then(function(value) {
-                        console.log(value);
-          });                           
-    }
+          Promise.resolve(result).then(function(value) { console.log(value); });                           
+    
     return pool;
  } catch(e) { console.error(e); } 
 }
@@ -335,7 +330,7 @@ const setWorkerNumber = async (ctx, link) => {
   
 }
 
-const updateFlexfields = async (ctx, data) => {
+const setAssignmentDFF = async (ctx, data) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -428,6 +423,6 @@ module.exports = {
     setAssignment: setAssignment,
     setWorkerNumber: setWorkerNumber,
     setDirectReports: setDirectReports,
-    updateFlexfields: () => {},
+    setAssignmentDFF: () => {},
     setCandidate: setCandidate
 }

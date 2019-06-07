@@ -1,10 +1,10 @@
 const axios = require('axios');
 
-const getEmployees = async (config) => 
-{
+const getEmployees = async (config,offset) => {
     const {baseURL, auth, pagesize} = config;
-      try{
-          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize, 
+  
+    try {
+          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=assignments,assignments.assignmentDFF,NationalIdTypeLOV,assignments.PersonTypeIdLOV', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -14,9 +14,8 @@ const getEmployees = async (config) =>
     
       //console.log(response.data.items || {}); 
       return response.data.items; 
-    }
-     catch(e){  console.log(e); return {}; }
-}
+    } catch(e){  console.log(e); return {}; }
+  }
 
 const getAssignment = async (config, link) => 
 {
