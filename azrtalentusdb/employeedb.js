@@ -113,10 +113,7 @@ const setPerson = async (ctx, employees) => {
                                     @CreationDate,
                                     @LastUpdateDate`;
         
-        const promiseResult = Promise.resolve(result);
-              promiseResult.then(function(value) {
-                            console.log(value);
-              });                           
+        Promise.resolve(result).then(value => { console.log(value); });                           
       }
      return pool;
 
@@ -190,15 +187,13 @@ const setEmployee = async (ctx, employees) => {
                                   @CreationDate,
                                   @LastUpdateDate`;
       
-            Promise.resolve(result).then(function(value) {
-              console.log(value);
-            });                           
+      Promise.resolve(result).then( value => { console.log(value); });                           
     }
    return pool;
   } catch(e) { console.error(e); } 
 }
 
-const setAssignment = async (ctx, assignment) => {
+const setAssignment = async (ctx, assignments) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -207,14 +202,13 @@ const setAssignment = async (ctx, assignment) => {
     config.options = ctx.options;
     config.pool = ctx.pool;
 
-try
- {
-
-   console.log(assignments);
-   const pool = await new mssql.ConnectionPool(config).connect();
-   
-    console.log(assignment);
-    const result = await pool.request()
+ try
+  {
+    //console.log(assignments);
+    const pool = await new mssql.ConnectionPool(config).connect();
+    for(const assignment of assignments)
+    {
+     const result = await pool.request()
                      .input('AssignmentNumber', mssql.VarChar(30), assignment.AssignmentNumber)
                      .input('AssignmentName', mssql.VarChar(80), assignment.AssignmentName)
                      .input('AssignmentCategory', mssql.VarChar(30), assignment.AssignmentCategory)
@@ -264,61 +258,61 @@ try
                      .input('LastUpdateDate', mssql.VarChar(30), assignment.LastUpdateDate) 
 
                      .query`usp_TALENTUS_INS_Assignment 
-                            @AssignmentNumber, 
-                            @AssignmentName, 
-                            @AssignmentCategory,                            
-                            @AssignmentStatus, 
-                            @PrimaryAssignmentFlag, 
-                            @AssignmentProjectedEndDate,
-                            @PersonNumber,
-                            @PersonTypeId,
-                            @ActionCode,
-                            @ActionReasonCode,
-                            @DeparmentId,
-                            @BusinessUnitId,
-                            @ManagerId,
-                            @ManagerType,
-                            @ManagerAssignmentId,
-                            @JobId,
-                            @LocationId,
-                            @GradeId,
-                            @PositionId,
-                            @WorkingAtHome,
-                            @WorkingAsManager,
-                            @WorkerCategory,
-                            @WorkingHours,
-                            @WorkTaxAddressId,
-                            @Frecuency,
-                            @FullPartTime,
-                            @StartTime,
-                            @EndTime,
-                            @SalaryAmount,
-                            @SalaryBasisId,
-                            @SalaryCode,
-                            @OriginalHireDate,
-                            @EffectiveStartDate,
-                            @EffectiveEndDate,
-                            @TermsEffectiveStartDate,
-                            @PeriodOfServiceId,
-                            @ProbationPeriodLength,
-                            @ProbationPeriodUnitOfMeasure, 
-                            @ProjectedStartDate,
-                            @ProposedPersonTypeId,
-                            @RegularTemporary,
-                            @ActualTerminationDate,
-                            @LegalEntityId,
-                            @PrimaryWorkRelationFlag,
-                            @PrimaryWorkTermsFlag,
-                            @CreationDate,
-                            @LastUpdateDate`;
+                              @AssignmentNumber, 
+                              @AssignmentName, 
+                              @AssignmentCategory,                            
+                              @AssignmentStatus, 
+                              @PrimaryAssignmentFlag, 
+                              @AssignmentProjectedEndDate,
+                              @PersonNumber,
+                              @PersonTypeId,
+                              @ActionCode,
+                              @ActionReasonCode,
+                              @DeparmentId,
+                              @BusinessUnitId,
+                              @ManagerId,
+                              @ManagerType,
+                              @ManagerAssignmentId,
+                              @JobId,
+                              @LocationId,
+                              @GradeId,
+                              @PositionId,
+                              @WorkingAtHome,
+                              @WorkingAsManager,
+                              @WorkerCategory,
+                              @WorkingHours,
+                              @WorkTaxAddressId,
+                              @Frecuency,
+                              @FullPartTime,
+                              @StartTime,
+                              @EndTime,
+                              @SalaryAmount,
+                              @SalaryBasisId,
+                              @SalaryCode,
+                              @OriginalHireDate,
+                              @EffectiveStartDate,
+                              @EffectiveEndDate,
+                              @TermsEffectiveStartDate,
+                              @PeriodOfServiceId,
+                              @ProbationPeriodLength,
+                              @ProbationPeriodUnitOfMeasure, 
+                              @ProjectedStartDate,
+                              @ProposedPersonTypeId,
+                              @RegularTemporary,
+                              @ActualTerminationDate,
+                              @LegalEntityId,
+                              @PrimaryWorkRelationFlag,
+                              @PrimaryWorkTermsFlag,
+                              @CreationDate,
+                              @LastUpdateDate`;
     
           Promise.resolve(result).then(function(value) { console.log(value); });                           
-    
+    }
     return pool;
  } catch(e) { console.error(e); } 
 }
 
-const setWorkerNumber = async (ctx, link) => {
+const setWorkerNumber = async (ctx, personNumber, workerNumber) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -327,10 +321,24 @@ const setWorkerNumber = async (ctx, link) => {
   config.options = ctx.options;
   config.pool = ctx.pool;
 
-  
+  try
+  {
+   const pool = await new mssql.ConnectionPool(config).connect();
+   
+   const result = await pool.request()
+                     .input('PersonNumber', mssql.VarChar(30), personNumber)
+                     .input('WorkerNumber', mssql.VarChar(30), workerNumber)
+                    
+                     .query`usp_TALENTUS_UDP_WorkerNumber 
+                            @PersonNumber, 
+                            @WorkerNumber`;
+    
+    Promise.resolve(result).then(value => { console.log(value); });                           
+    return pool;
+ } catch(e) { console.error(e); }  
 }
 
-const setAssignmentDFF = async (ctx, data) => {
+const setAssignmentDFF = async (ctx, assignmentsDFF) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -339,6 +347,29 @@ const setAssignmentDFF = async (ctx, data) => {
   config.options = ctx.options;
   config.pool = ctx.pool;
 
+  try
+  {
+   const pool = await new mssql.ConnectionPool(config).connect();
+   for(const item of assignmentsDFF)
+   {
+    console.log(item[0]);
+    const assignmentDFF = item[0];
+    const result = await pool.request()
+                     .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
+                     .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
+                     .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
+                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS[0].Description)
+                    
+                     .query`usp_TALENTUS_UDP_AssignmentDFF 
+                            @AssignmentNumber, 
+                            @AccessTicketAllowed, 
+                            @BenefitPlanCode,                            
+                            @BenefitPlanName`;
+    
+          Promise.resolve(result).then(value => { console.log(value); });                           
+      }
+    return pool;
+ } catch(e) { console.error(e); } 
 }
 
 const setDirectReports = async (ctx, data) => {
@@ -352,77 +383,11 @@ const setDirectReports = async (ctx, data) => {
 }
 
 
-const setCandidate = async (ctx, candidates) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-    
-    try
-    {
-     const pool = await new mssql.ConnectionPool(config).connect();
-     for(const candidate of candidates)
-     {
-       const result = await pool.request()
-                         .input('PersonId', mssql.BigInt, candidate.PersonId)
-                         .input('CandidateNumber', mssql.VarChar(240), candidate.CandidateNumber)
-                         .input('FirstName', mssql.VarChar(150), candidate.FirstName)
-                         .input('MiddleName', mssql.VarChar(80), candidate.MiddleName)
-                         .input('LastName', mssql.VarChar(150), candidate.LastName)
-                         .input('PreviousLastName', mssql.VarChar(255), candidate.PreviousLastName)
-                         .input('FullName', mssql.VarChar(300), candidate.FullName)
-                         .input('DisplayName', mssql.VarChar(240), candidate.DisplayName)
-                         .input('MilitaryRank', mssql.VarChar(255), candidate.MilitaryRank)
-                         .input('PreNameAdjunct', mssql.VarChar(255), candidate.PreNameAdjunct)
-                         .input('Title', mssql.VarChar(30), candidate.Title)
-                         .input('Suffix', mssql.VarChar(80), candidate.Suffix)
-                         .input('KnownAs', mssql.VarChar(255), candidate.KnownAs)
-                         .input('Honors', mssql.VarChar(255), candidate.Honors)
-                         .input('Email', mssql.VarChar(240), candidate.Email)
-                         .input('CandidateType', mssql.VarChar(100), candidate.CandidateType)
-                         .input('CreatedBy', mssql.VarChar(30), candidate.CreatedBy)
-                         .input('LastUpdatedBy', mssql.VarChar(30), candidate.LastUpdatedBy)
-                         .input('CreationDate', mssql.VarChar(30), candidate.CreationDate)
-                         .input('LastUpdateDate', mssql.VarChar(30), candidate.LastUpdateDate)
-                         .query`usp_TALENTUS_INS_Candidate 
-                                    @PersonId,
-                                    @CandidateNumber, 
-                                    @FirstName,
-                                    @MiddleName,
-                                    @LastName,
-                                    @PreviousLastName,
-                                    @FullName,
-                                    @DisplayName,
-                                    @MilitaryRank,
-                                    @PreNameAdjunct,
-                                    @Title,
-                                    @Suffix,
-                                    @KnownAs,
-                                    @Honors,
-                                    @Email,
-                                    @CandidateType,
-                                    @CreatedBy,
-                                    @LastUpdatedBy,
-                                    @CreationDate,
-                                    @LastUpdateDate`;
-        
-        const promiseResult = Promise.resolve(result);
-              promiseResult.then(function(value) {
-                            console.log(value);
-              });                           
-      }
-    } catch(e) { console.error(e); } 
-}
-
 module.exports = {
     setPerson: setPerson,
     setEmployee: setEmployee,
     setAssignment: setAssignment,
     setWorkerNumber: setWorkerNumber,
     setDirectReports: setDirectReports,
-    setAssignmentDFF: () => {},
-    setCandidate: setCandidate
+    setAssignmentDFF: setAssignmentDFF
 }

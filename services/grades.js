@@ -1,14 +1,14 @@
 const axios = require('axios');
 
-const getGrades = async (config, collection) => 
+const getGrades = async (config, offset) => 
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + collection + "?limit=" + pagesize, 
+          const response = await axios({ method: "GET", url: baseURL + collection + "?limit=" + pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
@@ -26,7 +26,7 @@ const getSteps = async (config, href) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
@@ -36,15 +36,15 @@ const getSteps = async (config, href) =>
      catch(e){  console.log(e); return {}; }
 }
 
-const getRates = async (config) => 
+const getRates = async (config, offset) => 
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "gradeRates?limit=" + pagesize, 
+          const response = await axios({ method: "GET", url: baseURL + "gradeRates?limit=" + pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
@@ -62,7 +62,7 @@ const getRateValues = async (config, href) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     

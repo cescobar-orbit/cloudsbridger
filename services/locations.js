@@ -9,7 +9,7 @@ const getLocations = async (config, offset) =>
                                   auth: {username: auth.username, password: auth.password},
                                   headers: {
                                      'Accept': 'application/json',
-                                     'Content-Type': 'application/json'
+                                     'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
                                    }
                                  });
      return response.data.items;                            

@@ -35,22 +35,27 @@ else if(env == 'production') {
 
 app.get('/workstructures/locations', async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do 
     {
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
       const locations = await location.getLocations(cfg.hcmAPI, offset);
       console.log(locations);
       const conn = locationdb.setLocation(cfg.dbConfig, locations);
-      Promise.resolve(conn)
-             .then(function(value) { value.close(); }); 
-     console.log('Locations Offset: ', offset);   
-     offset = offset + 1;
-    } while( offset <= cfg.hcmAPI.pagesize)
+      Promise.resolve(conn).then(function(value) { value.close(); }); 
+      console.log('Locations offset: ${offset}, pageNumber: ${pageNumber}');   
+      pageNumber = pageNumber + 1;
+    } while(hasMore)
 });
 
 app.get('/workstructures/organizations',  async (req, res) => {
     let offset = 0;
-    do{ 
-      const organizations = await organization.getOrganizations(cfg.hcmAPI);
+    let pageNumber = 1;
+    let hasMore = true;
+    do{
+      offset = (pageNumber * cfg.hcmAPI.pagesize); 
+      const organizations = await organization.getOrganizations(cfg.hcmAPI, offset);
       //console.log(organizations);
       for(const organization of organizations)
        {
@@ -61,39 +66,52 @@ app.get('/workstructures/organizations',  async (req, res) => {
         const connDFF = organizationdb.setOrganizationDFF(cfg.dbConfig, organizationDFF);
         Promise.resolve(connDFF).then(value => { value.close(); });
        }
-       console.log('Organization Offset: ', offset);
-       offset = offset + 1;
-    } while(offset <= cfg.hcmAPI.pagesize);
+       console.log('Organization offset: ${offset}, PageNumber: ${pageNumber}');
+       pageNumber = pageNumber + 1;
+    } while(hasMore);
 });
 
 app.get('/workstructures/jobFamilies', async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do 
     {
-      const jobFamilies = await job.getJobFamilies(cfg.hcmAPI);
+      const jobFamilies = await job.getJobFamilies(cfg.hcmAPI, offset);
       //console.log(jobFamilies);
       jobdb.setJobFamily(cfg.dbConfig, jobFamilies);
-      console.log('Jobfamilies offset: ', offset);
-      offset = offset + 1;
-    } while(offset <= cfg.hcmAPI.pagesize); 
+      console.log('Jobfamilies offset: ${offset}, pageNumber: ${pageNumber}');
+      pageNumber = pageNumber + 1;
+    } while(hasMore); 
 });
 
 app.get('/workstructures/jobs',  async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do 
     { 
-     const jobs = await job.getJobs(cfg.hcmAPI);
+     offset = (pageNumber * cfg.hcmAPI.pagesize);
+     const response = await job.getJobs(cfg.hcmAPI, offset);
+     const jobs = response.jobs;
+     hasMore = response.hasMore;
      //console.log(jobs);
-     jobdb.setJob(cfg.dbConfig, jobs);
-     console.log('Jobs offset: ', offset);
-     offset = offset + 1;
-    } while(offset <= cfg.hcmAPI.pagesize);
+     const ctx1 = jobdb.setJob(cfg.dbConfig, jobs);
+     Promise.resolve(ctx1).then(value => { value.close(); });
+
+     const ctx2 = jobdb.setJob
+     console.log('Jobs offset: ${offset}, pageNumber: ${pageNumber}');
+     pageNumber = pageNumber + 1;
+    } while(hasMore);
 });
 
 app.get('/workstructures/grades',  async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do
      { 
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
       const grades = await grade.getGrades(cfg.hcmAPI, offset);
       //console.log(grades);
       for(const grade of grades)
@@ -104,16 +122,19 @@ app.get('/workstructures/grades',  async (req, res) => {
         const stepConn = gradedb.setStep(cfg.dbConfig, data.GradeId, grade.steps[0]);
         Promise.resolve(stepConn).then(value => { value.close(); });
       }
-      console.log('Grades offset: ', offset);
-      offset =  offset + 1;
-    } while( offset <= cfg.hcmAPI.pagesize);
+      console.log('Grades offset: ${offset}, pageNumber: ${pageNumber}');
+      pageNumber =  pageNumber + 1;
+    } while(hasMore);
 });
 
  app.get('/workstructures/gradeRates',  async (req, res) => { 
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do
     {
-      const rates = await grade.getRates(cfg.hcmAPI);
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
+      const rates = await grade.getRates(cfg.hcmAPI, offset);
       //console.log(rates);
       for(const rateItem of rates)
       {
@@ -123,66 +144,95 @@ app.get('/workstructures/grades',  async (req, res) => {
        const rateValueConn = gradedb.setRateValue(cfg.dbConfig, rateItem.rateValues[0]);
        Promise.resolve(rateValueConn).then(value => { value.close(); });
       }  
-      console.log('Rates offset: ', offset);
-      offset = offset + 1;
-    } while(offset < cfg.hcmAPI.pagesize);
+      console.log('Rates offset: ${offset}, pageNumber: ${pageNumber}');
+      pageNumber = pageNumber + 1;
+    } while(hasMore);
 });
 
 app.get('/workstructures/positions', async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do 
      {
-      const positions = await position.getPositions(cfg.hcmAPI, offset);
-      //console.log(positions);
-      for(const positionItem of positions) 
-       { 
-         const connPos = positiondb.setPosition(cfg.dbConfig, positionItem);
-         Promise.resolve(connPos).then(value => { value.close(); });
-         const posDFF = positiondb.setPositionDFF(positionItem.PositionDFF[0]);
-         Promise.resolve(posDFF).then(value => { value.close(); });
-       }
-       console.log('Positions offset: ', offset);
-       offset = offset + 1;
-    } while( offset <= cfg.hcmAPI.pagesize);
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
+      const response = await position.getPositions(cfg.hcmAPI, offset);
+      const positions = response.items; 
+      hasMore = response.hasMore;
+  
+      const posConn1 = positiondb.setPosition(cfg.dbConfig, positions);
+      Promise.resolve(postConn1).then(value => { value.close(); });
+      
+      // const postConn2 = positiondb.setPositionCustomerFlex(positions);
+      // Promise.resolve(postConn2).then(value => { value.close(); });
+      
+      console.log('Positions offset: ',offset, 'pageNumber: ', pageNumber);
+      pageNumber = pageNumber + 1;
+    } while(hasMore);
 });
 
 app.get('/employees', async (req, res) => {
     let offset = 0;
+    let pageNumber = 1;
+    let hasMore = true;
     do 
     {
-      const employees = await employee.getEmployees(cfg.hcmAPI, offset);
-      const conn1 = employeedb.setPerson(cfg.dbConfig, employees);
-      Promise.resolve(conn1).then(function(value) { value.close(); });
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
+      const response = await employee.getEmployees(cfg.hcmAPI, offset);
+      const employees = response.items;
+      hasMore = response.hasMore;
+      //const conn1 = employeedb.setPerson(cfg.dbConfig, employees);
+      //Promise.resolve(conn1).then(function(value) { value.close(); });
 
-      const conn2 = employeedb.setEmployee(cfg.dbConfig, employees);
-      Promise.resolve(conn2).then(function(value) { value.close(); });
+      //const conn2 = employeedb.setEmployee(cfg.dbConfig, employees);
+      //Promise.resolve(conn2).then(function(value) { value.close(); });
+      
+      let assignmentsDFF = [];
+      for(const emp of employees) { 
+        const assignments = emp.assignments;
+        if(assignments && assignments.length)
+        { 
+         //const ctx1 = employeedb.setAssignment(cfg.dbConfig, assignments);
+         //Promise.resolve(ctx1).then(v => { v.close(); });
+         for(const a of assignments)
+            assignmentsDFF.push(a.assignmentDFF);
+        }
+        const publicWorker = await employee.getPublicWorker(cfg.hcmAPI, emp.PersonId);
+        let workerNumber = publicWorker.assignments[0].WorkerNumber;
+        console.log('PersonId: ', emp.PersonId, 'WorkerNumber: ', workerNumber);
+        const wrkConn = employeedb.setWorkerNumber(cfg.dbConfig, emp.PersonNumber, workerNumber);
+        Promise.resolve(wrkConn).then(w =>{ w.close(); });
+      }
 
-      console.log('offset: ', offset);
-      offset = offset + 1;
-    } while(offset <= cfg.hcmAPI.pagesize);
+      const ctx2 = employeedb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
+      Promise.resolve(ctx2).then(v => { v.close(); });
+
+      console.log('Assignments offset: ', offset, 'PageNumber: ', pageNumber);
+      pageNumber = pageNumber + 1;
+    } while(hasMore);
     
-    let assignments = [];
-    let aflexFields = [];
-    let personTypes = [];
+    // let assignments = [];
+    // let aflexFields = [];
+    // let personTypes = [];
 
-    for(const data of employees) 
-      { 
-        if(data.assignments.length > 0) {
-            for(const assignmentItem of data.assignments)
-             {
-                let assignmentItemAppended = Object .assign(assignmentItem[0], {PersonNumber: data.PersonNumber});
-                assignments.push(assignmentItemAppended);
-                //console.log(assignments);
-                if(assignmentItem.assignmentDFF && assignmentItem.assignmentDFF.length > 0)
-                  {
-                    aflexFields.push(assignmentItem.assignmentDDF[0]);  
-                  }
-                  if(assignmentItem.PersonTypeIdLOV && assignmentItem.PersonTypeIdLOV.length > 0) {
-                     personTypes.push(assignmentItem.PersonTypeIdLOV[0]);
-                  }   
-                }
-             }
-          }
+    // for(const data of employees) 
+    //   { 
+    //     if(data.assignments.length > 0) {
+    //         for(const assignmentItem of data.assignments)
+    //          {
+    //             let assignmentItemAppended = Object .assign(assignmentItem[0], {PersonNumber: data.PersonNumber});
+    //             assignments.push(assignmentItemAppended);
+    //             //console.log(assignments);
+    //             if(assignmentItem.assignmentDFF && assignmentItem.assignmentDFF.length > 0)
+    //               {
+    //                 aflexFields.push(assignmentItem.assignmentDDF[0]);  
+    //               }
+    //               if(assignmentItem.PersonTypeIdLOV && assignmentItem.PersonTypeIdLOV.length > 0) {
+    //                  personTypes.push(assignmentItem.PersonTypeIdLOV[0]);
+    //               }   
+    //             }
+    //          }
+    //       }
 
 //        const conn3 = employeedb.setAssignment(cfg.dbConfig, assignments);
 //        Promise.resolve(conn3)

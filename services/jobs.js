@@ -1,14 +1,14 @@
 const axios = require('axios');
 
-const getJobs = async (config) => 
+const getJobs = async (config, offset) => 
 {
-    const {baseURL, auth} = config;
+    const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "jobs", 
+          const response = await axios({ method: "GET", url: baseURL + "jobs?limit="+pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
@@ -18,15 +18,15 @@ const getJobs = async (config) =>
      catch(e){  console.log(e); return {}; }
 }
 
-const getJobFamilies = async (config) => 
+const getJobFamilies = async (config, offset) => 
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "jobFamilies?limit="+pagesize, 
+          const response = await axios({ method: "GET", url: baseURL + "jobFamilies?limit="+pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     

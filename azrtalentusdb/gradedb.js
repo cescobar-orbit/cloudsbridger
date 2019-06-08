@@ -43,7 +43,7 @@ const setGrade = async (ctx, grade) => {
     } catch(e) { console.error(e); }
 }
 
-const setStep = async (ctx, gradeId, steps) => {
+const setStep = async (ctx, gradeId, step) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -55,8 +55,7 @@ const setStep = async (ctx, gradeId, steps) => {
     try 
     {
      const pool =  await new mssql.ConnectionPool(config).connect();        
-     for(const step of steps)
-     {
+     
       const result = pool.request()
          .input('GradeStepId', mssql.BigInt, step.GradeStepId)
          .input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate)
@@ -73,17 +72,15 @@ const setStep = async (ctx, gradeId, steps) => {
                 @GradeStepSequence,
                 @EffectiveStartDate,
                 @EffectiveEndDate`;
-    const promiseResult = Promise.resolve(result);
-          promiseResult.then(function(value) {
-                    console.log(value);
-                });
-     }
-    return pool;
+      
+        Promise.resolve(result).then(function(value) { console.log(value); });
+  
+        return pool;
    } catch(e) { console.error(e); } 
 }
 
 
-const setRate = async (ctx, rates) => {
+const setRate = async (ctx, rate) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -95,8 +92,7 @@ const setRate = async (ctx, rates) => {
   try 
   {
    const pool =  await new mssql.ConnectionPool(config).connect();        
-   for(const rate of rates)
-   {
+   
     const result = pool.request()
        .input('RateId', mssql.BigInt, rate.RateId)
        .input('EffectiveStartDate', mssql.VarChar(10), rate.EffectiveStartDate)
@@ -122,11 +118,8 @@ const setRate = async (ctx, rates) => {
               @EffectiveEndDate,
               @LegislativeDataGroupId`;
               
-      const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                  console.log(value);
-      });   console.dir(Promise.resolve(result));
-   }
+      Promise.resolve(result).then(function(value) { console.log(value); });   
+   
   return pool;
  } catch(e) { console.error(e); } 
 

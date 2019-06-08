@@ -16,7 +16,7 @@ const setPosition = async (ctx, positions) => {
         const pool = await new mssql.ConnectionPool(config).connect();
         for(const position of positions)
             {
-                const request = await pool.request()
+             const request = await pool.request()
                     .input('PositionId', mssql.BigInt, position.PositionId)
                     .input('PositionCode', mssql.VarChar(30), position.PositionCode)
                     .input('PositionName', mssql.VarChar(240), position.Name)
@@ -43,7 +43,7 @@ const setPosition = async (ctx, positions) => {
                     .input('CreationDate', mssql.VarChar(30), position.CreationDate)
                     .input('LastUpdateDate', mssql.VarChar(30), position.LastUpdateDate)
     
-                const result = request.query`usp_TALENTUS_INS_Position 
+             const result = request.query`usp_TALENTUS_INS_Position 
                         @PositionId,
                         @PositionCode, 
                         @PositionName,
@@ -70,19 +70,15 @@ const setPosition = async (ctx, positions) => {
                         @CreationDate,
                         @LastUpdateDate`;
                 
-                const promiseResult = Promise.resolve(result);
-                promiseResult.then(function(value) {
-                    console.log(value);
-                }).catch(e => console.log(e));
+             Promise.resolve(result).then(value => { console.log(value); });
             }
-
-     return pool;
+      return pool;
     } catch(err) {
        console.error(err);
     }    
 }
 
-const setPositionDFF = async (ctx,positionDFF) => {
+const setPositionCustomerFlex = async (ctx, positions) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -94,24 +90,23 @@ const setPositionDFF = async (ctx,positionDFF) => {
     try
     {
         const pool = await new mssql.ConnectionPool(config).connect();
-    
-            const result = pool.request()
+        for(const position of positions)
+        {
+         const positionDFF = position.PositionCustomerFlex[0];
+         const result = pool.request()
                 .input('PositionId', mssql.BigInt, positionDFF.PositionId)
                 .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
                 .input('BenefitProgram', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
                 .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
-                .query`usp_TALENTUS_UDP_PositionFlexFields
+                .query`usp_TALENTUS_UDP_PositionCustomerFlex
                         @PositionId,
                         @Station, 
                         @BenefitProgram,
                         @ClassificationCode`;
             
-            const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                console.log(value);
-            });
+            Promise.resolve(result).then(function(value) { console.log(value); });
+        }
       return pool;
-
     } catch(err) {
        console.error(err);
     }    
@@ -119,5 +114,5 @@ const setPositionDFF = async (ctx,positionDFF) => {
 
 module.exports = {
     setPosition: setPosition,
-    setPositionDFF: setPositionDFF
+    setPositionDFF: setPositionCustomerFlex
 }
