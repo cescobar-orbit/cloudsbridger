@@ -4,7 +4,7 @@ const getOrganizations = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
     try{
-        const response = await axios({ method: "GET", url: baseURL + "organizations?limit="+pagesize+'&offset='+offset+'&expand=organizationDFF', 
+        const response = await axios({ method: "GET", url: baseURL + "organizations?expand=OrganizationDFF&limit="+pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -13,7 +13,7 @@ const getOrganizations = async (config, offset) =>
         });
     
       //console.log(response.data.items || {}); 
-      return response.data.items; 
+      return response.data; 
     }
      catch(e){  console.log(e); return {}; }
 }

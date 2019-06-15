@@ -2,7 +2,7 @@
 const mssql = require('mssql');
 
  
-const setOrganization = async (ctx, organization) => {
+const setOrganization = async (ctx, organizations) => {
     const config = {};
     config.server = ctx.host;
     config.user = ctx.username;
@@ -14,6 +14,8 @@ const setOrganization = async (ctx, organization) => {
     try
     {
      const pool = await new mssql.ConnectionPool(config).connect();
+     for(const organization of organizations)
+     {
        const result = await pool.request()
                          .input('OrganizationId', mssql.BigInt, organization.OrganizationId)
                          .input('OrganizationCode', mssql.VarChar(120), organization.OrgCode)
@@ -39,16 +41,13 @@ const setOrganization = async (ctx, organization) => {
                                     @CreationDate,
                                     @LastUpdateDate`;
         
-        const promiseResult = Promise.resolve(result);
-              promiseResult.then(function(value) {
-                            console.log(value);
-              });                           
-    
+        Promise.resolve(result).then(value => { console.log(value); });                           
+     }
      return pool;
     } catch(e) { console.error(e); } 
 }
 
-const setOrganizationDFF = async (ctx, orgFlexfields) => {
+const setOrganizationDFF = async (ctx, orgFlex) => {
   const config = {};
   config.server = ctx.host;
   config.user = ctx.username;
@@ -60,22 +59,19 @@ const setOrganizationDFF = async (ctx, orgFlexfields) => {
   try
   {
    const pool = await new mssql.ConnectionPool(config).connect();
-   for(const flexField of orgFlexfields)
+   for(const field of orgFlex)
    {
      const result = await pool.request()
-                       .input('OrganizationId', mssql.BigInt, flexField.OrganizationId)
-                       .input('CostCenter', mssql.VarChar(50), flexField.CENTROCOSTOS2)
-                       .input('Area', mssql.VarChar(50), flexField.AREA2)
-                       .query`usp_TALENTUS_UDP_OrgFlexFields 
+                       .input('OrganizationId', mssql.BigInt, field.OrganizationId)
+                       .input('CostCenter', mssql.VarChar(50), field.CENTROCOSTOS2)
+                       .input('Area', mssql.VarChar(50), field.AREA2)
+                       .query`usp_TALENTUS_UDP_OrganizationDFF 
                                   @OrganizationId,
                                   @CostCenter, 
                                   @Area`;
       
-      const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                          console.log(value);
-            });                           
-    }
+      Promise.resolve(result).then( value => { console.log(value); });                           
+   } 
     return pool;
   } catch(e) { console.error(e); } 
 }
@@ -107,10 +103,7 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
                                   @ParentDepartmentId,
                                   @ParentDepartmentName`;
       
-      const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                          console.log(value);
-            });                           
+      Promise.resolve(result).then(function(value) { console.log(value); });                           
     }
     return pool;
   } catch(e) { console.error(e); } 
