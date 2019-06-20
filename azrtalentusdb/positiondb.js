@@ -1,20 +1,14 @@
 'use strict'
 const mssql = require('mssql');
-
+const connector = require('./connection');
  
 const setPosition = async (ctx, positions) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
     
     try
-    {
-        const pool = await new mssql.ConnectionPool(config).connect();
-        for(const pos of positions)
+    {   
+        const connectionPool = await connector.getConnection(ctx);
+        connectionPool.then( async (pool) => {
+          for(const pos of positions)
             {
              console.log(pos);
              const request = await pool.request()
@@ -73,47 +67,44 @@ const setPosition = async (ctx, positions) => {
                 
              Promise.resolve(result).then(value => { console.log(value); });
             }
-      return pool;
+        });
+      return connectionPool;
     } catch(err) {
        console.error(err);
     }    
 }
 
-const setPositionCustomerFlex = async (ctx, positions) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-    
+const setPositionCustomerFlex = async (ctx, positions) => {    
     try
     {
-        const pool = await new mssql.ConnectionPool(config).connect();
+        const pool = await connector.getConnection(ctx); 
+        
         for(const position of positions)
-        {
-         const positionDFF = position.PositionCustomerFlex[0];
-         const result = pool.request()
+         {
+          const positionDFF = position.PositionCustomerFlex[0];
+          const result = await pool.request()
                 .input('PositionId', mssql.BigInt, positionDFF.PositionId)
                 .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
-                .input('BenefitProgram', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
+                .input('BenefitPlanCode', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
+                .input('BenefitPlanName', mssql.VarChar(100), positionDFF.LVVO_PROGBENEFPOS.filter( i =>{ return i.Value == positionDFF.PROGBENEFPOS})[0].Description)
                 .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
                 .query`usp_TALENTUS_UDP_PositionCustomerFlex
                         @PositionId,
                         @Station, 
-                        @BenefitProgram,
+                        @BenefitPlanCode,
+                        @BenefitPlanName,
                         @ClassificationCode`;
             
-            Promise.resolve(result).then(function(value) { console.log(value); });
+            Promise.resolve(result).then(value => { console.log(value) });
         }
-      return pool;
+      pool.close();
     } catch(err) {
        console.error(err);
+       return Promise.reject(err);
     }    
 }
 
 module.exports = {
     setPosition: setPosition,
-    setPositionDFF: setPositionCustomerFlex
+    setPositionCustomerFlex: setPositionCustomerFlex
 }

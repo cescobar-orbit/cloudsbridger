@@ -1,19 +1,12 @@
 'use strict'
 const mssql = require('mssql');
-
+const connector = require('./connection');
  
 const setOrganization = async (ctx, organizations) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-    
+      
     try
     {
-     const pool = await new mssql.ConnectionPool(config).connect();
+     const pool = await connector.getConnection(ctx);
      for(const organization of organizations)
      {
        const result = await pool.request()
@@ -43,22 +36,14 @@ const setOrganization = async (ctx, organizations) => {
         
         Promise.resolve(result).then(value => { console.log(value); });                           
      }
-     return pool;
-    } catch(e) { console.error(e); } 
+     pool.close();
+    } catch(e) { console.error(e); return Promise.reject(err);} 
 }
 
 const setOrganizationDFF = async (ctx, orgFlex) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
-  
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
+   const pool = await connector.getConnection(ctx);
    for(const field of orgFlex)
    {
      const result = await pool.request()
@@ -72,23 +57,15 @@ const setOrganizationDFF = async (ctx, orgFlex) => {
       
       Promise.resolve(result).then( value => { console.log(value); });                           
    } 
-    return pool;
-  } catch(e) { console.error(e); } 
+    pool.close();
+  } catch(e) { console.error(e); return Promise.reject(err);} 
 }
 
 
 const setDepartmentTree = async (ctx, departmentNodes) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
-  
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
+   const pool = await connector.getConnection();
 
    for(const department of departmentNodes)
    {
@@ -105,8 +82,8 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
       
       Promise.resolve(result).then(function(value) { console.log(value); });                           
     }
-    return pool;
-  } catch(e) { console.error(e); } 
+    pool.close();
+  } catch(e) { console.error(e); return Promise.reject(err);} 
 }
 
 module.exports = {

@@ -4,7 +4,7 @@ const getPositions = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "positions?expand=PositionCustomerFlex&limit="+pagesize+'&offset='+offset, 
+          const response = await axios({ method: "GET", url: baseURL + "positions?expand=PositionCustomerFlex,PositionCustomerFlex.LVVO_PROGBENEFPOS&limit="+pagesize+'&offset='+offset, 
                   auth: {username: auth.username, password: auth.password},
                   headers: {
                       'Accept': 'application/json',

@@ -1,5 +1,6 @@
 'use strict'
 const mssql = require('mssql');
+const connector = require('./connection.js');
 
  
 const setPerson = async (ctx, employees) => {
@@ -312,53 +313,39 @@ const setAssignment = async (ctx, assignments) => {
  } catch(e) { console.error(e); } 
 }
 
-const setWorkerNumber = async (ctx, personNumber, workerNumber) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
+const setWorkerNumber = async (ctx, personNumber, workerNumbers) => {
 
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
-   
-   const result = await pool.request()
-                     .input('PersonNumber', mssql.VarChar(30), personNumber)
-                     .input('WorkerNumber', mssql.VarChar(30), workerNumber)
+   const pool = await connector.getConnection();
+   for(const wrk of WorkerNumbers)
+   {
+    const result = await pool.request()
+                     .input('PersonNumber', mssql.VarChar(30), wrk.PersonNumber)
+                     .input('WorkerNumber', mssql.VarChar(30), wrk.WorkerNumber)
                     
                      .query`usp_TALENTUS_UDP_WorkerNumber 
                             @PersonNumber, 
                             @WorkerNumber`;
     
     Promise.resolve(result).then(value => { console.log(value); });                           
-    return pool;
- } catch(e) { console.error(e); }  
+    pool.close();
+   }
+  } catch(e) { console.error(e); }  
 }
 
 const setAssignmentDFF = async (ctx, assignmentsDFF) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
-
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
+   const pool = await connector.getConnection(ctx);
    for(const item of assignmentsDFF)
    {
-    console.log(item[0]);
     const assignmentDFF = item[0];
     const result = await pool.request()
                      .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
                      .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
                      .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
-                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS[0].Description)
+                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS.filter(i => { return i.Value == assignmentDFF.PROGBENEFASG})[0].Description )
                     
                      .query`usp_TALENTUS_UDP_AssignmentDFF 
                             @AssignmentNumber, 
@@ -368,34 +355,24 @@ const setAssignmentDFF = async (ctx, assignmentsDFF) => {
     
           Promise.resolve(result).then(value => { console.log(value); });                           
       }
-    return pool;
- } catch(e) { console.error(e); } 
+    pool.close();
+ } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
 const setPersonType = async(ctx, personTypes) =>{
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
-   for(const item of personTypes)
+   const pool = await connector.getConnection(ctx);
+   for(const pt of personTypes)
    {
-    console.log(item[0]);
-    const pt = item[0];
     const result = await pool.request()
                      .input('PersonTypeId', mssql.BigInt, pt.PersonTypeId)
-                     .input('SytemPersonType', mssql.VarChar(80), pt.SystemPersonType)
+                     .input('SystemPersonType', mssql.VarChar(80), pt.SystemPersonType)
                      .input('UserPersonType', mssql.VarChar(30), pt.UserPersonType)
                      .input('ActiveFlag', mssql.Char(5), pt.ActiveFlag)
                      .input('DefaultFlag', mssql.Char(5), pt.DefaultFlag)
                     
-                     .query`usp_TALENTUS_INS_PersontType 
+                     .query`usp_TALENTUS_INS_PersonType 
                                @PersonTypeId, 
                                @SystemPersonType, 
                                @UserPersonType,                            
@@ -404,52 +381,59 @@ const setPersonType = async(ctx, personTypes) =>{
     
       Promise.resolve(result).then(value => { console.log(value); });                           
   }
-  return pool;
- } catch(e) { console.error(e); } 
+  pool.close();
+ } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
-const setDirectReports = async (ctx, data) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
+const setDirectReports = async (ctx, directReports) => {
+  try
+  {
+   const pool = await connector.getConnection(ctx);
+   for(const dr of directReports)
+   {
+    const result = await pool.request()
+                     .input('PersonId', mssql.BigInt, dr.PersonId)
+                     .input('FullName', mssql.VarChar(255), dr.FullName)
+                     .input('ManagerId', mssql.BigInt, dr.ManagerId)
+                     .input('EffectiveStartDate', mssql.Char(10), pt.EffectiveStartDate)
+                      
+                     .query`usp_TALENTUS_INS_DirectReport
+                               @PersonId, 
+                               @FullName, 
+                               @ManagerId,                            
+                               @EffectiveStartDate`;
+    
+      Promise.resolve(result).then(value => { console.log(value); });                           
+  }
+  pool.close();
+ } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
-const setPersonContact = async(ctx, contacts) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.username;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
+const setPersonContact = async(ctx, contacts) => { 
 
   try
-    {
-      const pool = await new mssql.ConnectionPool(config).connect();
+    { 
+      const pool = await connector.getConnection(ctx);
+
       for(const contact of contacts)
        {
-        console.log(contact[0]);
         const result = await pool.request()
-                     .input('PersonId', mssql.BigInt, contact.PerID[0])
-                     .input('ContactId', mssql.BigInt, contact.ConPerID[0])
-                     .input('EffectiveStartDate', mssql.VarChar(10), contact.ConEffectiveStartDate[0])
-                     .input('ContactType', mssql.VarChar(50), contact.ConContactType[0])
-                     .input('ContactTypeName', mssql.VarChar(100), contact.ConContactTypeMeaning[0])
-                     .input('FirstName', mssql.VarChar(150), contact.ConFirstName[0])
-                     .input('MiddleName', mssql.VarChar(150), contact.ConMiddleName[0])
-                     .input('LastName', mssql.VarChar(150), contact.ConLastName[0])
-                     .input('DateOfBirth', mssql.Varchar(10), contact.ConDateOfBirth[0])
-                     .input('CountryOfBirth', mssql.Varchar(10), contact.ConCountryOfBirth[0])
-                     .input('RegionOfBirth', mssql.Varchar(10), contact.ConRegionOfBirth[0])
-                     .input('Gender', mssql.Char(10), contact.ConGender[0])
-                     .input('MaritalStatus', mssql.VarChar(30), contact.ConMaritalStatus[0])
-                     .input('BeneficiaryIndicator', mssql.Char(5), contact.ConBeneficiaryIndicator[0])
-                     .input('Prefix', mssql.Char(5), contact.ConPrefix[0])
-                     .input('SequenceNumber', mssql.Int, contact.ConSequenceNumber[0])
+                     .input('PersonId', mssql.BigInt, contact.PerID)
+                     .input('ContactId', mssql.BigInt, contact.ConPerID)
+                     .input('EffectiveStartDate', mssql.VarChar(10), contact.ConEffectiveStartDate)
+                     .input('ContactType', mssql.VarChar(50), contact.ConContactType)
+                     .input('ContactTypeName', mssql.VarChar(100), contact.ConContactTypeMeaning)
+                     .input('FirstName', mssql.VarChar(150), contact.ConFirstName)
+                     .input('MiddleName', mssql.VarChar(150), contact.ConMiddleName)
+                     .input('LastName', mssql.VarChar(150), contact.ConLastName)
+                     .input('DateOfBirth', mssql.VarChar(10), contact.ConDateOfBirth)
+                     .input('CountryOfBirth', mssql.VarChar(10), contact.ConCountryOfBirth)
+                     .input('RegionOfBirth', mssql.VarChar(10), contact.ConRegionOfBirth)
+                     .input('Gender', mssql.Char(10), contact.ConGender)
+                     .input('MaritalStatus', mssql.VarChar(30), contact.ConMaritalStatus)
+                     .input('BeneficiaryIndicator', mssql.Char(5), contact.ConBeneficiaryIndicator)
+                     .input('Prefix', mssql.Char(5), contact.ConPrefix)
+                     .input('SequenceNumber', mssql.Int, contact.ConSequenceNumber)
                     
                      .query`usp_TALENTUS_INS_PersonContact 
                               @PersonId,
@@ -471,9 +455,9 @@ const setPersonContact = async(ctx, contacts) => {
     
           Promise.resolve(result).then(value => { console.log(value); });                           
       }
-    return pool;
+    pool.close();
     } 
-    catch(err){ console.error(err); }
+  catch(err){ console.error(err); return Promise.reject(err); }
 }
 
 
