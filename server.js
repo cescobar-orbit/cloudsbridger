@@ -215,27 +215,38 @@ app.get('/employees', async (req, res) => {
         employees.push(emp);
 
         if(assignments && assignments.length > 0)
-        { 
-          //if(assignments.assingmentDFF && assignments.assignmentDFF.length > 0)
-             assignmentsDFF.push(assignments[0].assignmentDFF);
-         
-          if(assignments.PersonTypeIdLOV && assignments.PersonTypeIdLOV.length > 0)
-             personTypesIdLOV.push(assignments.PersonTypeIdLOV[0]);
+        {     
+          assignments.forEach( a => {
 
+            a.assignmentDFF.forEach( adff => {
+              Object.assign(adff, {AssignmentNumber: a.AssignmentNumber});
+              assignmentsDFF.push(adff);
+            });
+    
+
+            a.PersonTypeIdLOV.forEach(pt => {
+                personTypesIdLOV.push(pt);
+            });
+
+          });
           assignmentItems.push(Object.assign(assignments, {PersonNumber: emp.PersonNumber}));            
-        }        
-      }
-      
+        }
         /*
         const publicWorker = await employee.getPublicWorker(cfg.hcmAPI, emp.PersonId);
         if(publicWorker && publicWorker.assignments.length > 0)
           {
             const workerNumber = publicWorker.assignments[0].WorkerNumber;
             console.log('PersonId: ', emp.PersonId, 'WorkerNumber: ', workerNumber);
-            publicWorkers.push({PersonNumber: emp.PersonNumber, WorkerNumber: workerNumber});  
+            const wrk = {PersonNumber: emp.PersonNumber, WorkerNumber: workerNumber};
+            employeedb.setWorkerNumber(cfg.dbConfig, wrk);
+            publicWorkers.push(wrk);  
           }
-          */
-     
+        */        
+      }
+          
+      employeedb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
+      //employeedb.setPersonType(cfg.dbConfig, personTypesIdLOV);
+
       console.log('Employee-Assignments offset: ', offset, 'PageNumber: ', pageNumber);
       pageNumber = pageNumber + 1;
       //console.log(personTypesIdLOV);
@@ -245,7 +256,7 @@ app.get('/employees', async (req, res) => {
     //employeedb.setPerson(cfg.dbConfig, employees);
     //employeedb.setEmployee(cfg.dbConfig, employees);
     //employeedb.setAssignment(cfg.dbConfig, assignmentItems);
-    employeedb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
+    //employeedb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
     //employeedb.setWorkerNumber(cfg.dbConfig, publicWorkers);
     //employeedb.setPersonType(cfg.dbConfig, personTypesIdLOV);
 });

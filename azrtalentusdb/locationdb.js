@@ -3,17 +3,10 @@ const mssql = require('mssql');
 
 
 const setLocation = async (ctx, location) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-   
+  
     try
     {
-        const pool = await new mssql.ConnectionPool(config).connect();
+        const pool = await new mssql.ConnectionPool(ctx).connect();
  
             const result = pool.request()
                 .input('LocationId', mssql.BigInt, location.LocationId)

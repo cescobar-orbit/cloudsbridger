@@ -4,17 +4,10 @@ const connector = require('./connection.js');
 
  
 const setPerson = async (ctx, employees) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
     
     try
     {
-     const pool = await new mssql.ConnectionPool(config).connect();
+     const pool = await new mssql.ConnectionPool(ctx).connect();
      for(const person of employees)
      {
        const result = await pool.request()
@@ -116,23 +109,16 @@ const setPerson = async (ctx, employees) => {
         
         Promise.resolve(result).then(value => { console.log(value); });                           
       }
-     return pool;
+     pool.close();
 
     } catch(e) { console.error(e); } 
 }
 
 const setEmployee = async (ctx, employees) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-  
+ 
   try
   {
-   const pool = await new mssql.ConnectionPool(config).connect();
+   const pool = await new mssql.ConnectionPool(ctx).connect();
    for(const emp of employees)
    {
      const result = await pool.request()
@@ -190,23 +176,16 @@ const setEmployee = async (ctx, employees) => {
       
       Promise.resolve(result).then( value => { console.log(value); });                           
     }
-   return pool;
+   pool.close();
   } catch(e) { console.error(e); } 
 }
 
 const setAssignment = async (ctx, assignments) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
 
  try
   {
     //console.log(assignments);
-    const pool = await new mssql.ConnectionPool(config).connect();
+    const pool = await new mssql.ConnectionPool(ctx).connect();
     for(const assignment of assignments)
     {
      const result = await pool.request()
@@ -309,18 +288,18 @@ const setAssignment = async (ctx, assignments) => {
     
           Promise.resolve(result).then(function(value) { console.log(value); });                           
     }
-    return pool;
+    pool.close();
  } catch(e) { console.error(e); } 
 }
 
-const setWorkerNumber = async (ctx, personNumber, workerNumbers) => {
+const setWorkerNumber = async (ctx, wrk) => {
 
   try
   {
-   const pool = await connector.getConnection();
-   for(const wrk of WorkerNumbers)
-   {
-    const result = await pool.request()
+   const pool = await connector.getConnection(ctx);
+   //for(const wrk of workerNumbers)
+   // {
+     const result = await pool.request()
                      .input('PersonNumber', mssql.VarChar(30), wrk.PersonNumber)
                      .input('WorkerNumber', mssql.VarChar(30), wrk.WorkerNumber)
                     
@@ -330,7 +309,7 @@ const setWorkerNumber = async (ctx, personNumber, workerNumbers) => {
     
     Promise.resolve(result).then(value => { console.log(value); });                           
     pool.close();
-   }
+   //}
   } catch(e) { console.error(e); }  
 }
 
@@ -339,8 +318,9 @@ const setAssignmentDFF = async (ctx, assignmentsDFF) => {
   {
    const pool = await connector.getConnection(ctx);
    for(const item of assignmentsDFF)
-   {
-    const assignmentDFF = item[0];
+    {
+    console.log('AssignmentNumber: ', item.AssignmentNumber);
+    const assignmentDFF = item;
     const result = await pool.request()
                      .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
                      .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
