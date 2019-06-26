@@ -8,8 +8,8 @@ const setPosition = async (ctx, positions) => {
     {   
         const connectionPool = await connector.getConnection(ctx);
         connectionPool.then( async (pool) => {
-          for(const pos of positions)
-            {
+        for(const pos of positions)
+          {
              console.log(pos);
              const request = await pool.request()
                     .input('PositionId', mssql.BigInt, pos.PositionId)
@@ -82,11 +82,15 @@ const setPositionCustomerFlex = async (ctx, positions) => {
         for(const position of positions)
          {
           const positionDFF = position.PositionCustomerFlex[0];
+          const benefitPlanName = positionDFF.LVVO_PROGBENEFPOS.filter( i =>{ return i.Value == positionDFF.PROGBENEFPOS})[0];
+          if(benefitPlanName)
+             benefitPlanName = "";
+             
           const result = await pool.request()
                 .input('PositionId', mssql.BigInt, positionDFF.PositionId)
                 .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
                 .input('BenefitPlanCode', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
-                .input('BenefitPlanName', mssql.VarChar(100), positionDFF.LVVO_PROGBENEFPOS.filter( i =>{ return i.Value == positionDFF.PROGBENEFPOS})[0].Description)
+                .input('BenefitPlanName', mssql.VarChar(100), benefitPlanName.Description)
                 .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
                 .query`usp_TALENTUS_UDP_PositionCustomerFlex
                         @PositionId,

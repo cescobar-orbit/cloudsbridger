@@ -1,12 +1,12 @@
 'use strict'
 const mssql = require('mssql');
-
+const connector = require('./connection');
 
 const setLocation = async (ctx, location) => {
   
     try
     {
-        const pool = await new mssql.ConnectionPool(ctx).connect();
+        const pool = await connector.getConnection(ctx);
  
             const result = pool.request()
                 .input('LocationId', mssql.BigInt, location.LocationId)

@@ -1,18 +1,11 @@
 'use strict'
 const mssql = require('mssql');
+const connector = require('./connection');
 
 const setJob = async (ctx, job) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-
     try
     {
-     const pool = await new mssql.ConnectionPool(config).connect();
+     const pool = await connector.getConnection(ctx);
     
         const result = pool.request()
               .input('JobId', mssql.BigInt, job.JobId)
@@ -49,27 +42,17 @@ const setJob = async (ctx, job) => {
                         @CreationDate,
                         @LastUpdateDate`;
 
-            Promise.resolve(result).then(function(value) {
-                console.log(value);
-            });                
+            Promise.resolve(result).then(value => { console.log(value); });                
       return pool;
     } catch(e) { console.error(e); }  
 }
 
 const setJobFamily = async (ctx, JobFamily) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-
     try
     {
-        const pool = await new mssql.ConnectionPool(config).connect();
+        const pool = await connector.getConnection(ctx);
         
-            const request = pool.request()
+            const result = pool.request()
                     .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
                     .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
                     .input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode)
@@ -89,9 +72,7 @@ const setJobFamily = async (ctx, JobFamily) => {
                             @CreationDate,
                             @LastUpdateDate`;
 
-                Promise.resolve(result).then(function(value) {
-                    console.log(value);
-                });
+                Promise.resolve(result).then(value => { console.log(value); });
             return pool;
         }catch(e) { console.error(e); }
     }

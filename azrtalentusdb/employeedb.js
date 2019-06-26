@@ -7,7 +7,7 @@ const setPerson = async (ctx, employees) => {
     
     try
     {
-     const pool = await new mssql.ConnectionPool(ctx).connect();
+     const pool = await connector.getConnection(ctx);
      for(const person of employees)
      {
        const result = await pool.request()
@@ -118,7 +118,7 @@ const setEmployee = async (ctx, employees) => {
  
   try
   {
-   const pool = await new mssql.ConnectionPool(ctx).connect();
+   const pool = await connector.getConnection(ctx);
    for(const emp of employees)
    {
      const result = await pool.request()
@@ -185,7 +185,7 @@ const setAssignment = async (ctx, assignments) => {
  try
   {
     //console.log(assignments);
-    const pool = await new mssql.ConnectionPool(ctx).connect();
+    const pool = await connector.getConnection(ctx);
     for(const assignment of assignments)
     {
      const result = await pool.request()
@@ -317,15 +317,23 @@ const setAssignmentDFF = async (ctx, assignmentsDFF) => {
   try
   {
    const pool = await connector.getConnection(ctx);
-   for(const item of assignmentsDFF)
+   for(const assignmentDFF of assignmentsDFF)
     {
-    console.log('AssignmentNumber: ', item.AssignmentNumber);
-    const assignmentDFF = item;
-    const result = await pool.request()
+     console.log('AssignmentNumber: ', assignmentDFF.AssignmentNumber);
+     //console.log(assignmentDFF.LVVO_PROGRBENEFASG);
+     let benefitPlanName = assignmentDFF.LVVO_PROGRBENEFASG.filter(i => { return i.Value == assignmentDFF.PROGRBENEFASG });
+     if(benefitPlanName.length == 0){
+       benefitPlanName = [];
+       benefitPlanName.push({Description: ''});
+     }
+
+     //console.log('BenefitPlanCode: ', assignmentDFF.PROGRBENEFASG, 'BenefitPlanName: ', benefitPlanName);
+  
+     const result = await pool.request()
                      .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
                      .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
                      .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
-                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS.filter(i => { return i.Value == assignmentDFF.PROGBENEFASG})[0].Description )
+                     .input('BenefitPlanName', mssql.VarChar(30), benefitPlanName[0].Description)
                     
                      .query`usp_TALENTUS_UDP_AssignmentDFF 
                             @AssignmentNumber, 
@@ -440,6 +448,37 @@ const setPersonContact = async(ctx, contacts) => {
   catch(err){ console.error(err); return Promise.reject(err); }
 }
 
+const setAssignmentDetail = async (ctx, assignmentDetail) => {
+  try
+  {
+
+  } catch(e) {}
+}
+/*
+const setWorkRelationship = async (ctx, workRelations) => {
+  try
+  {
+   const pool = await connector.getConnection(ctx);
+   for(const wrkRel of workRelations)
+    {
+     const result = await pool.request()
+                     .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
+                     .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
+                     .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
+                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS.filter(i => { return i.Value == assignmentDFF.PROGBENEFASG})[0].Description )
+                    
+                     .query`usp_TALENTUS_UDP_AssignmentDFF 
+                            @AssignmentNumber, 
+                            @AccessTicketAllowed, 
+                            @BenefitPlanCode,                            
+                            @BenefitPlanName`;
+    
+          Promise.resolve(result).then(value => { console.log(value); });                           
+      }
+    pool.close();
+ } catch(e) { console.error(e); return Promise.reject(e);} 
+}
+*/
 
 module.exports = {
     setPerson: setPerson,
@@ -449,5 +488,7 @@ module.exports = {
     setDirectReports: setDirectReports,
     setAssignmentDFF: setAssignmentDFF,
     setPersonType: setPersonType,
-    setPersonContact: setPersonContact
+    setPersonContact: setPersonContact,
+    setAssignmentDetail: setAssignmentDetail
+   // setWorkRelationship: setWorkRelationship
 }

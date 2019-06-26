@@ -5,7 +5,7 @@ const getLocations = async (config, offset) =>
     const {baseURL, auth, pagesize} = config;
     try
     {
-     const response = await axios({method: "GET", url: baseURL + "locations?limit="+pagesize+'&offset='+offset+'&expand=locations.LocationDFF', 
+     const response = await axios({method: "GET", url: baseURL + "locations?limit="+pagesize+'&offset='+offset, 
                                   auth: {username: auth.username, password: auth.password},
                                   headers: {
                                      'Accept': 'application/json',

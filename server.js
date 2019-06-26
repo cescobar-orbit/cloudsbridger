@@ -180,14 +180,14 @@ app.get('/workstructures/positions', async (req, res) => {
         
         for(record of positions)
         {
-          console.log(record);
+          //console.log(record);
           positionItems.push(record);
         }     
         console.log('Positions offset: ', offset, 'pageNumber: ', pageNumber);
         pageNumber = pageNumber + 1;
     } while(hasMore);
 
-    positiondb.setPosition(cfg.dbConfig, positionItems);
+    //positiondb.setPosition(cfg.dbConfig, positionItems);
     positiondb.setPositionCustomerFlex(cfg.dbConfig, positionItems);
 });
 
@@ -290,5 +290,32 @@ app.get('/person-contacts', async (req, res) => {
        } 
      });
  });
+
+ app.get('/worker-info', async (req, res) => {
+    const FileXML = __dirname + "/public/COPA_WORKER_20190607092638.xml";
+    fs.readFile(FileXML, 'utf8', async(err, xml) => {
+      if(!err) 
+      {
+        Xml2JS.parseString(xml, {trim:true}, async(error, json) => {
+           // find all elements: returns xml2js JSON of the element
+           const workRelation = xpath.find(json, "//Work_Relationship/Work_Relationship_Details/Work_Relationship_Detail");
+           console.log(workRelation);
+           for(const wrk of workRelation)
+           {
+             const worker = {PersonNumber: wrk.PerNumber, WorkerNumber: wrk.PerWorkerNumber};
+            
+             employeedb.setWorkerNumber(cfg.dbConfig, worker);   
+           }
+           //const personDetail = xpath.find(json, "//Person/Person_Detail");
+           //console.log(personDetail);
+           //employeedb.setPersonDetail(cfg.dbConfig, personDetail);
+        
+           //const assignmentDetail = xpath.find(json, "//Assignment_Details/Assignment_Detail");
+           //console.log(assignmentDetail);
+           //employeedb.setAssignmentDetail(cfg.dbConfig, assignmentDetail);                  
+        });
+     } 
+   });
+});
 
 app.listen(port, () => console.log('connecting to HCM End-points') );
