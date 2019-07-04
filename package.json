@@ -7,7 +7,9 @@
     "start": "SET NODE_ENV=development & node --max_old_space_size=8000 server.js",
     "staging": "NODE_ENV=staging node --max_old_space_size=8000 server.js",
     "production": "NODE_ENV=production node  --max_ol_space_size=8000 server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "author": "caescobar",
   "license": "ISC",
@@ -23,8 +25,10 @@
     "request": "^2.88.0",
     "xml2js": "^0.4.19",
     "xml2js-xpath": "^0.10.0",
-    "xpath": "0.0.27"
+    "xpath": "0.0.27",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {},
-  "keywords": []
+  "keywords": [],
+  "snyk": true
 }
