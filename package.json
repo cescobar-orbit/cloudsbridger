@@ -4,9 +4,9 @@
   "description": "This process performs an initial load data from HCM to TalentusDB on Azure Cloud in order to populate the database with the data needed to star designing the processes to integrate several systems.",
   "main": "index.js",
   "scripts": {
-    "start": "SET NODE_ENV=development & node --max_old_space_size=8000 server.js",
-    "staging": "NODE_ENV=staging node --max_old_space_size=8000 server.js",
-    "production": "NODE_ENV=production node  --max_ol_space_size=8000 server.js",
+    "start": "SET NODE_ENV=development & node --max_old_space_size=500096 server.js",
+    "staging": "NODE_ENV=staging node --max_old_space_size=500096 server.js",
+    "production": "NODE_ENV=production node  --max_ol_space_size=500096 server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"

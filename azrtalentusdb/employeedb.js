@@ -109,9 +109,9 @@ const setPerson = async (ctx, employees) => {
         
         Promise.resolve(result).then(value => { console.log(value); });                           
       }
-     pool.close();
+     return pool;
 
-    } catch(e) { console.error(e); } 
+    } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
 const setEmployee = async (ctx, employees) => {
@@ -176,129 +176,17 @@ const setEmployee = async (ctx, employees) => {
       
       Promise.resolve(result).then( value => { console.log(value); });                           
     }
-   pool.close();
-  } catch(e) { console.error(e); } 
+   return pool;
+  } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
-const setAssignment = async (ctx, assignments) => {
-
- try
-  {
-    //console.log(assignments);
-    const pool = await connector.getConnection(ctx);
-    for(const assignment of assignments)
-    {
-     const result = await pool.request()
-                     .input('AssignmentNumber', mssql.VarChar(30), assignment.AssignmentNumber)
-                     .input('AssignmentName', mssql.VarChar(80), assignment.AssignmentName)
-                     .input('AssignmentCategory', mssql.VarChar(30), assignment.AssignmentCategory)
-                     .input('AssignmentStatus', mssql.VarChar(30), assignment.AssignmentStatus)
-                     .input('PrimaryAssignmentFlag', mssql.VarChar(5), assignment.PrimaryAssignmentFlag)
-                     .input('AssignmentProjectedEndDate', mssql.VarChar(10), assignment.AssignmentProjectedEndDate)
-                     .input('PersonNumber', mssql.VarChar(50), assignment.PersonNumber)
-                     .input('PersonTypeId', mssql.BigInt, assignment.PersonTypeId)
-                     .input('ActionCode', mssql.VarChar(30), assignment.ActionCode)
-                     .input('ActionReasonCode', mssql.VarChar(30), assignment.ActionReasonCode)
-                     .input('DeparmentId', mssql.BigInt, assignment.DepartmentId)
-                     .input('BusinessUnitId', mssql.BigInt, assignment.BusinessUnitId)
-                     .input('ManagerId', mssql.BigInt, assignment.ManagerId)
-                     .input('ManagerType', mssql.VarChar(30), assignment.ManagerType)
-                     .input('ManagerAssignmentId', mssql.BigInt, assignment.ManagerAssignmentId)
-                     .input('JobId', mssql.BigInt, assignment.JobId)
-                     .input('LocationId', mssql.BigInt, assignment.LocationId)
-                     .input('GradeId', mssql.BigInt, assignment.GradeId)
-                     .input('PositionId', mssql.BigInt, assignment.PositionId)
-                     .input('WorkingAtHome', mssql.VarChar(30), assignment.WorkingAtHome)
-                     .input('WorkingAsManager', mssql.VarChar(30), assignment.WorkingAsManager)
-                     .input('WorkerCategory', mssql.VarChar(30), assignment.WorkerCategory)
-                     .input('WorkingHours', mssql.Numeric(8,2), assignment.WorkingHours)
-                     .input('WorkTaxAddressId', mssql.BigInt, assignment.WorkTaxAddressId)
-                     .input('Frecuency', mssql.VarChar(30), assignment.Frecuency)
-                     .input('FullPartTime', mssql.VarChar(30), assignment.FullPartTime)
-                     .input('StartTime', mssql.VarChar(7), assignment.StartTime)
-                     .input('EndTime', mssql.VarChar(7), assignment.EndTime)
-                     .input('SalaryAmount', mssql.VarChar(11), assignment.SalaryAmount)
-                     .input('SalaryBasisId', mssql.BigInt, assignment.SalaryBasisId)
-                     .input('SalaryCode', mssql.VarChar(30), assignment.SalaryCode)
-                     .input('OriginalHireDate', mssql.VarChar(10), assignment.OriginalHireDate)
-                     .input('EffectiveStartDate', mssql.VarChar(10), assignment.EffectiveStartDate)
-                     .input('EffectiveEndDate', mssql.VarChar(10), assignment.EffectiveEndDate)
-                     .input('TermsEffectiveStartDate', mssql.VarChar(10), assignment.TermsEffectiveStartDate)
-                     .input('PeriodOfServiceId', mssql.BigInt, assignment.PeriodOfServiceId)
-                     .input('ProbationPeriodLength', mssql.Int, assignment.ProbationPeriodLength)
-                     .input('ProbationPeriodUnitOfMeasure', mssql.VarChar(30), assignment.ProbationPeriodUnitOfMeasure)
-                     .input('ProjectedStartDate', mssql.VarChar(10), assignment.ProjectStartDate)
-                     .input('ProposedPersonTypeId', mssql.BigInt, assignment.ProposedPersonTypeId)
-                     .input('RegularTemporary', mssql.VarChar(30), assignment.RegularTemporary)
-                     .input('ActualTerminationDate', mssql.VarChar(10), assignment.ActualTerminationDate)
-                     .input('LegalEntityId', mssql.BigInt, assignment.LegalEntityId)
-                     .input('PrimaryWorkRelationFlag', mssql.Char(5), assignment.PrimaryWorkRelationFlag)
-                     .input('PrimaryWorkTermsFlag', mssql.Char(10), assignment.PrimaryWorkTermsFlag)  
-                     .input('CreationDate', mssql.VarChar(30), assignment.CreationDate)
-                     .input('LastUpdateDate', mssql.VarChar(30), assignment.LastUpdateDate) 
-
-                     .query`usp_TALENTUS_INS_Assignment 
-                              @AssignmentNumber, 
-                              @AssignmentName, 
-                              @AssignmentCategory,                            
-                              @AssignmentStatus, 
-                              @PrimaryAssignmentFlag, 
-                              @AssignmentProjectedEndDate,
-                              @PersonNumber,
-                              @PersonTypeId,
-                              @ActionCode,
-                              @ActionReasonCode,
-                              @DeparmentId,
-                              @BusinessUnitId,
-                              @ManagerId,
-                              @ManagerType,
-                              @ManagerAssignmentId,
-                              @JobId,
-                              @LocationId,
-                              @GradeId,
-                              @PositionId,
-                              @WorkingAtHome,
-                              @WorkingAsManager,
-                              @WorkerCategory,
-                              @WorkingHours,
-                              @WorkTaxAddressId,
-                              @Frecuency,
-                              @FullPartTime,
-                              @StartTime,
-                              @EndTime,
-                              @SalaryAmount,
-                              @SalaryBasisId,
-                              @SalaryCode,
-                              @OriginalHireDate,
-                              @EffectiveStartDate,
-                              @EffectiveEndDate,
-                              @TermsEffectiveStartDate,
-                              @PeriodOfServiceId,
-                              @ProbationPeriodLength,
-                              @ProbationPeriodUnitOfMeasure, 
-                              @ProjectedStartDate,
-                              @ProposedPersonTypeId,
-                              @RegularTemporary,
-                              @ActualTerminationDate,
-                              @LegalEntityId,
-                              @PrimaryWorkRelationFlag,
-                              @PrimaryWorkTermsFlag,
-                              @CreationDate,
-                              @LastUpdateDate`;
-    
-          Promise.resolve(result).then(function(value) { console.log(value); });                           
-    }
-    pool.close();
- } catch(e) { console.error(e); } 
-}
-
-const setWorkerNumber = async (ctx, wrk) => {
+const setWorkerNumber = async (ctx, workerNumbers) => {
 
   try
   {
    const pool = await connector.getConnection(ctx);
-   //for(const wrk of workerNumbers)
-   // {
+   for(const wrk of workerNumbers)
+    {
      const result = await pool.request()
                      .input('PersonNumber', mssql.VarChar(30), wrk.PersonNumber)
                      .input('WorkerNumber', mssql.VarChar(30), wrk.WorkerNumber)
@@ -308,44 +196,11 @@ const setWorkerNumber = async (ctx, wrk) => {
                             @WorkerNumber`;
     
     Promise.resolve(result).then(value => { console.log(value); });                           
-    pool.close();
-   //}
-  } catch(e) { console.error(e); }  
+    return pool;
+   }
+  } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
-const setAssignmentDFF = async (ctx, assignmentsDFF) => {
-  try
-  {
-   const pool = await connector.getConnection(ctx);
-   for(const assignmentDFF of assignmentsDFF)
-    {
-     console.log('AssignmentNumber: ', assignmentDFF.AssignmentNumber);
-     //console.log(assignmentDFF.LVVO_PROGRBENEFASG);
-     let benefitPlanName = assignmentDFF.LVVO_PROGRBENEFASG.filter(i => { return i.Value == assignmentDFF.PROGRBENEFASG });
-     if(benefitPlanName.length == 0){
-       benefitPlanName = [];
-       benefitPlanName.push({Description: ''});
-     }
-
-     //console.log('BenefitPlanCode: ', assignmentDFF.PROGRBENEFASG, 'BenefitPlanName: ', benefitPlanName);
-  
-     const result = await pool.request()
-                     .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
-                     .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
-                     .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
-                     .input('BenefitPlanName', mssql.VarChar(30), benefitPlanName[0].Description)
-                    
-                     .query`usp_TALENTUS_UDP_AssignmentDFF 
-                            @AssignmentNumber, 
-                            @AccessTicketAllowed, 
-                            @BenefitPlanCode,                            
-                            @BenefitPlanName`;
-    
-          Promise.resolve(result).then(value => { console.log(value); });                           
-      }
-    pool.close();
- } catch(e) { console.error(e); return Promise.reject(e);} 
-}
 
 const setPersonType = async(ctx, personTypes) =>{
   try
@@ -369,7 +224,7 @@ const setPersonType = async(ctx, personTypes) =>{
     
       Promise.resolve(result).then(value => { console.log(value); });                           
   }
-  pool.close();
+  return pool;
  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
@@ -393,7 +248,7 @@ const setDirectReports = async (ctx, directReports) => {
     
       Promise.resolve(result).then(value => { console.log(value); });                           
   }
-  pool.close();
+  return pool;
  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
@@ -443,52 +298,18 @@ const setPersonContact = async(ctx, contacts) => {
     
           Promise.resolve(result).then(value => { console.log(value); });                           
       }
-    pool.close();
+     return pool;
     } 
   catch(err){ console.error(err); return Promise.reject(err); }
 }
 
-const setAssignmentDetail = async (ctx, assignmentDetail) => {
-  try
-  {
 
-  } catch(e) {}
-}
-/*
-const setWorkRelationship = async (ctx, workRelations) => {
-  try
-  {
-   const pool = await connector.getConnection(ctx);
-   for(const wrkRel of workRelations)
-    {
-     const result = await pool.request()
-                     .input('AssignmentNumber', mssql.VarChar(30), assignmentDFF.AssignmentNumber)
-                     .input('AccessTicketAllowed', mssql.VarChar(80), assignmentDFF.ACCESOBOLETOS)
-                     .input('BenefitPlanCode', mssql.VarChar(30), assignmentDFF.PROGRBENEFASG)
-                     .input('BenefitPlanName', mssql.VarChar(30), assignmentDFF.LVVO_ACCESOBOLETOS.filter(i => { return i.Value == assignmentDFF.PROGBENEFASG})[0].Description )
-                    
-                     .query`usp_TALENTUS_UDP_AssignmentDFF 
-                            @AssignmentNumber, 
-                            @AccessTicketAllowed, 
-                            @BenefitPlanCode,                            
-                            @BenefitPlanName`;
-    
-          Promise.resolve(result).then(value => { console.log(value); });                           
-      }
-    pool.close();
- } catch(e) { console.error(e); return Promise.reject(e);} 
-}
-*/
 
 module.exports = {
     setPerson: setPerson,
     setEmployee: setEmployee,
-    setAssignment: setAssignment,
     setWorkerNumber: setWorkerNumber,
     setDirectReports: setDirectReports,
-    setAssignmentDFF: setAssignmentDFF,
     setPersonType: setPersonType,
-    setPersonContact: setPersonContact,
-    setAssignmentDetail: setAssignmentDetail
-   // setWorkRelationship: setWorkRelationship
+    setPersonContact: setPersonContact
 }

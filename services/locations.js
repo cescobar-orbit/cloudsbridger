@@ -12,7 +12,8 @@ const getLocations = async (config, offset) =>
                                      'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
                                    }
                                  });
-     return response.data.items;                            
+
+     return response.data;                            
     }
     catch(e) {
         console.error(e);

@@ -82,22 +82,26 @@ const setPositionCustomerFlex = async (ctx, positions) => {
         for(const position of positions)
          {
           const positionDFF = position.PositionCustomerFlex[0];
-          const benefitPlanName = positionDFF.LVVO_PROGBENEFPOS.filter( i =>{ return i.Value == positionDFF.PROGBENEFPOS})[0];
-          if(benefitPlanName)
-             benefitPlanName = "";
-             
+          let benefitPlanName = positionDFF.LVVO_PROGBENEFPOS.filter( i => { return i.Value == positionDFF.PROGBENEFPOS});
+          if(benefitPlanName.length = 0){
+            benefitPlanName = [];
+            benefitPlanName.push({Description: ''});
+          }
+            
           const result = await pool.request()
                 .input('PositionId', mssql.BigInt, positionDFF.PositionId)
                 .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
                 .input('BenefitPlanCode', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
                 .input('BenefitPlanName', mssql.VarChar(100), benefitPlanName.Description)
                 .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
+                .input('RiskLevel', mssql.VarChar(100), positionDFF.CLASIFRIESGO)
                 .query`usp_TALENTUS_UDP_PositionCustomerFlex
                         @PositionId,
                         @Station, 
                         @BenefitPlanCode,
                         @BenefitPlanName,
-                        @ClassificationCode`;
+                        @ClassificationCode,
+                        @RiskLevel`;
             
             Promise.resolve(result).then(value => { console.log(value) });
         }
