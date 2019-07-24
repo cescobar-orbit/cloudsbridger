@@ -18,7 +18,7 @@ const getOrganizations = async (config, offset) =>
      catch(e){  console.log(e); return {}; }
 }
 
-const getFlexfields = async (config, baseURL) => 
+const getOrganizationDFFLOV = async (config, baseURL) => 
 {
     const {auth} = config;
     try{
@@ -38,5 +38,5 @@ const getFlexfields = async (config, baseURL) =>
 
 module.exports = {
     getOrganizations: getOrganizations,
-    getFlexfields: getFlexfields
+    getOrganizationDFFLOV: getOrganizationDFFLOV
 };

@@ -36,7 +36,7 @@ const setOrganization = async (ctx, organizations) => {
         
         Promise.resolve(result).then(value => { console.log(value); });                           
      }
-     pool.close();
+     return pool;
     } catch(e) { console.error(e); return Promise.reject(err);} 
 }
 
@@ -49,16 +49,21 @@ const setOrganizationDFF = async (ctx, orgFlex) => {
      const result = await pool.request()
                        .input('OrganizationId', mssql.BigInt, field.OrganizationId)
                        .input('CostCenter', mssql.VarChar(50), field.CENTROCOSTOS2)
-                       .input('Area', mssql.VarChar(50), field.AREA2)
+                       .input('AreaCode', mssql.VarChar(50), field.AREA2)
+                       .input('AreaDesc', mssql.VarChar(100), field.AreaDesc)
+                       .input('AreaValueId', mssql.BigInt, field.AreaValueId)
+
                        .query`usp_TALENTUS_UDP_OrganizationDFF 
                                   @OrganizationId,
                                   @CostCenter, 
-                                  @Area`;
+                                  @AreaCode,
+                                  @AreaDesc,
+                                  @AreaValueId`;
       
       Promise.resolve(result).then( value => { console.log(value); });                           
    } 
-    pool.close();
-  } catch(e) { console.error(e); return Promise.reject(err);} 
+    return pool;
+  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
 

@@ -38,18 +38,20 @@ app.get('/workstructures/locations', async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = true;
-
+    let locationItems = [];
     do 
     {
-      offset = (pageNumber * cfg.hcmAPI.pagesize);
       const response = await location.getLocations(cfg.hcmAPI, offset);
-      const locations  = response.locations;
-            hasMore = response.hasMore;
-      console.log(locations);
-      locationdb.setLocation(cfg.dbConfig, locations);
+      const locations  = response.items;
+      hasMore = response.hasMore;
+      const connLoc = await locationdb.setLocation(cfg.dbConfig, locations);
+      Promise.resolve(connLoc).then(cloc => {cloc.close()});
       console.log('Locations offset: ', offset, ' pageNumber: ', pageNumber);   
       pageNumber = pageNumber + 1;
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
     } while(hasMore)
+
+
 });
 
 app.get('/workstructures/organizations',  async (req, res) => {
@@ -59,6 +61,8 @@ app.get('/workstructures/organizations',  async (req, res) => {
     let organizations = [];
     let orgFlex = [];
 
+    console.time('Organizations');
+
     do{
       offset = (pageNumber * cfg.hcmAPI.pagesize); 
       const response = await organization.getOrganizations(cfg.hcmAPI, offset);
@@ -66,11 +70,41 @@ app.get('/workstructures/organizations',  async (req, res) => {
 
       for(const org of response.items)
           organizations.push(org);    
-
-      for(const organization of organizations)
+      
+      let hrefDFF = '';
+      for(const org of organizations)
        {
-         if(organization.OrganizationDFF && organization.OrganizationDFF.length > 0) {
-           orgFlex.push(organization.OrganizationDFF[0]);
+         let orgDFFLov = [];
+         if(org.OrganizationDFF && org.OrganizationDFF.length > 0) {
+           const orgDFF = org.OrganizationDFF[0];
+           if(org.ClassificationCode == 'DEPARTMENT')
+           {
+             for(const link of orgDFF.links) {
+               if(link.name == 'LVVO_AREA2') {
+                 hrefDFF = link.href;
+                 break;
+               }
+             }
+  
+             //console.log(hrefDFF);
+             if(hrefDFF && hrefDFF.length > 0) {
+                const orgDFFExtra = await organization.getOrganizationDFFLOV(cfg.hcmAPI, hrefDFF);
+                //console.log(orgDFFExtra);
+                orgDFFLov = orgDFFExtra.filter( i => { return i.Value == orgDFF.AREA2 });
+                //console.log(orgDFFLov);
+                if(orgDFFLov && orgDFFLov.length > 0)
+                   Object.assign(orgDFF, {AreaDesc: orgDFFLov[0].Description, AreaValueId: orgDFFLov[0].ValueId});
+                else 
+                   Object.assign(orgDFF, {AreaDesc: '', AreaCode: '', AreaValueId: null});
+                //console.log(orgDFF);
+             }  
+           }  
+           else {
+             //delete orgDFFLov[0].links;
+             Object.assign(orgDFF, {AreaDesc: '', AreaCode: '', AreaValueId: null});
+           }
+           delete orgDFF.links;
+           orgFlex.push(orgDFF);
          }
        }
       
@@ -78,9 +112,13 @@ app.get('/workstructures/organizations',  async (req, res) => {
        pageNumber = pageNumber + 1;
     } while(hasMore);
 
-    organizationdb.setOrganization(cfg.dbConfig, organizations);
-    organizationdb.setOrganizationDFF(cfg.dbConfig, orgFlex);
-});
+    const orgConn = organizationdb.setOrganization(cfg.dbConfig, organizations);
+    Promise.resolve(orgConn).then(o => { o.close(); });
+    const orgDFFConn = organizationdb.setOrganizationDFF(cfg.dbConfig, orgFlex);
+    Promise.resolve(orgDFFConn).then(dff => { dff.close(); });
+    
+    console.timeEnd('Organizations')
+ });
 
 app.get('/workstructures/jobFamilies', async (req, res) => {
     let offset = 0;
@@ -188,7 +226,7 @@ app.get('/workstructures/positions', async (req, res) => {
         pageNumber = pageNumber + 1;
     } while(hasMore);
 
-    //positiondb.setPosition(cfg.dbConfig, positionItems);
+    positiondb.setPosition(cfg.dbConfig, positionItems);
     positiondb.setPositionCustomerFlex(cfg.dbConfig, positionItems);
 });
 
@@ -249,21 +287,30 @@ app.get('/employees', async (req, res) => {
           }
         */        
       });
+      const connPer = employeedb.setPerson(cfg.dbConfig, emps);
+      Promise.resolve(connPer).then(p => { c.close(); });
+      
+      const connEmp = employeedb.setEmployee(cfg.dbConfig, emp);
+      Promise.resolve(connEmp).then(e => { e.close(); });
+      /*
       const connAsg = assignmentdb.setAssignment(cfg.dbConfig, assignmentItems);
       Promise.resolve(connAsg).then(c => { c.close(); });
+      
+      connAsgDFF = assignmentdb.setAssignmentDFF(cfg.dbConfig, assignmentDFF);
+      Promise.resolve(connAsgDFF).then( dff => { dff.close(); });
+      
+      connPerType = employee.setPersonType(cfg.dbConfig, personTypeIdLOV);
+      Promise.resolve(connPerType).then( pt => { pt.close(); });
+      */
     }    
-      //employeedb.setPersonType(cfg.dbConfig, personTypesIdLOV);
-
+      
       console.log('Employee-Assignments offset: ', offset, 'PageNumber: ', pageNumber);
       pageNumber = pageNumber + 1;
       //console.log(personTypesIdLOV);
       //console.log(assignmentsDFF);
     } while(hasMore);
 
-    //employeedb.setPerson(cfg.dbConfig, employees);
-    //employeedb.setEmployee(cfg.dbConfig, employees);
-    //assignmentdb.setAssignment(cfg.dbConfig, assignmentItems);
-    //assignmentdb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
+      //assignmentdb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
     //employeedb.setWorkerNumber(cfg.dbConfig, publicWorkers);
     //employeedb.setPersonType(cfg.dbConfig, personTypesIdLOV);
 });
@@ -301,6 +348,8 @@ app.get('/person-contacts', async (req, res) => {
  });
 
  app.get('/worker-info', async (req, res) => {
+   try
+   {
     const FileXML = __dirname + "/public/COPA_WORKER_20190607092638.xml";
     fs.readFile(FileXML, 'utf8', async(err, xml) => {
       if(!err) 
@@ -309,18 +358,19 @@ app.get('/person-contacts', async (req, res) => {
           if(error) { console.error(error); }
            // find all elements: returns xml2js JSON of the element
            const workRelation = xpath.find(json, "//Work_Relationship/Work_Relationship_Details/Work_Relationship_Detail");
-           console.log(workRelation);
+           //console.log(workRelation);
            let workers = [];
            let wrk = {};
 
            for(let index=0; index < workRelation.length; index++)
            {
              wrk = workRelation[index];
-             if(index == 500)
+             if(index == 200)
              {
-              const connWorker1 = employeedb.setWorkerNumber(cfg.dbConfig, workers);
-              Promise.resolve(connWorker1).then(cwrk1 => { cwrk1.close(); });
-              workers = [];
+                 const connWorker1 = employeedb.setWorkerNumber(cfg.dbConfig, workers);
+                 Promise.resolve(connWorker1).then(cwrk1 => { cwrk1.close(); });
+                 workers = [];
+  
              }
              else 
              {
@@ -329,18 +379,19 @@ app.get('/person-contacts', async (req, res) => {
              }
 
            }
-                     //const personDetail = xpath.find(json, "//Person/Person_Detail");
+           //const personDetail = xpath.find(json, "//Person/Person_Detail");
            //console.log(personDetail);
            //const connPD = employeedb.setPersonDetail(cfg.dbConfig, personDetail);
            //Promise.resolve(connPD).then(pd => { pd.close(); });
 
-           const assignmentDetail = xpath.find(json, "//Assignment_Details/Assignment_Detail");
+           //const assignmentDetail = xpath.find(json, "//Assignment_Details/Assignment_Detail");
            //console.log(assignmentDetail);
-           const connAsgDet = assignmentdb.setAssignmentDetail(cfg.dbConfig, assignmentDetail);  
-           Promise.resolve(connAsgDet).then( asgd => asgd.close() );                
+           //const connAsgDet = assignmentdb.setAssignmentDetail(cfg.dbConfig, assignmentDetail);  
+           //Promise.resolve(connAsgDet).then( asgd => asgd.close() );                
         });
      } 
    });
+  } catch(e) { console.error(e); }
 });
 
 app.get('/salary', async (req, res) => {

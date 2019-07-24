@@ -111,7 +111,7 @@ const setPerson = async (ctx, employees) => {
       }
      return pool;
 
-    } catch(e) { console.error(e); } 
+    } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
 const setEmployee = async (ctx, employees) => {
@@ -177,7 +177,7 @@ const setEmployee = async (ctx, employees) => {
       Promise.resolve(result).then( value => { console.log(value); });                           
     }
    return pool;
-  } catch(e) { console.error(e); } 
+  } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
 const setWorkerNumber = async (ctx, workerNumbers) => {
@@ -198,7 +198,7 @@ const setWorkerNumber = async (ctx, workerNumbers) => {
     Promise.resolve(result).then(value => { console.log(value); });                           
     return pool;
    }
-  } catch(e) { console.error(e); }  
+  } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
 
