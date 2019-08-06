@@ -2,14 +2,13 @@
 const mssql = require('mssql');
 const connector = require('./connection');
  
-const setPosition = async (ctx, positions) => {
+const setPosition = async (ctx, pos) => {
     
     try
     {   
-        const connectionPool = await connector.getConnection(ctx);
-        connectionPool.then( async (pool) => {
-        for(const pos of positions)
-          {
+        const pool = await connector.getConnection(ctx);
+        //for(const pos of positions)
+          //{
              console.log(pos);
              const request = await pool.request()
                     .input('PositionId', mssql.BigInt, pos.PositionId)
@@ -38,7 +37,7 @@ const setPosition = async (ctx, positions) => {
                     .input('CreationDate', mssql.VarChar(30), pos.CreationDate)
                     .input('LastUpdateDate', mssql.VarChar(30), pos.LastUpdateDate)
     
-             const result = request.query`usp_TALENTUS_INS_Position 
+             const result = await request.query`usp_TALENTUS_INS_Position 
                         @PositionId,
                         @PositionCode, 
                         @PositionName,
@@ -66,21 +65,20 @@ const setPosition = async (ctx, positions) => {
                         @LastUpdateDate`;
                 
              Promise.resolve(result).then(value => { console.log(value); });
-            }
-        });
-      return connectionPool;
+            //}
+      return pool;
     } catch(err) {
        console.error(err);
     }    
 }
 
-const setPositionCustomerFlex = async (ctx, positions) => {    
+const setPositionCustomerFlex = async (ctx, position) => {    
     try
     {
         const pool = await connector.getConnection(ctx); 
         
-        for(const position of positions)
-         {
+        //for(const position of positions)
+         //{
           const positionDFF = position.PositionCustomerFlex[0];
           let benefitPlanName = positionDFF.LVVO_PROGBENEFPOS.filter( i => { return i.Value == positionDFF.PROGBENEFPOS});
           if(benefitPlanName.length = 0){
@@ -104,11 +102,11 @@ const setPositionCustomerFlex = async (ctx, positions) => {
                         @RiskLevel`;
             
             Promise.resolve(result).then(value => { console.log(value) });
-        }
-      pool.close();
+        //}
+      return pool;
     } catch(err) {
        console.error(err);
-       return Promise.reject(err);
+       //return Promise.reject(err);
     }    
 }
 

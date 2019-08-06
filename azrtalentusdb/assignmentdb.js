@@ -2,14 +2,14 @@
 const mssql = require('mssql');
 const connector = require('./connection.js');
 
-const setAssignment = async (ctx, assignments) => {
+const setAssignment = async (ctx, assignment) => {
     try
      {
        //console.log(assignments);
        const pool = await connector.getConnection(ctx);
 
-       for(const assignment of assignments)
-        {
+       //for(const assignment of assignments)
+        //{
           const result = await pool.request()
                         .input('AssignmentId', mssql.BigInt, assignment.AssignmentId)
                         .input('AssignmentNumber', mssql.VarChar(30), assignment.AssignmentNumber)
@@ -22,6 +22,7 @@ const setAssignment = async (ctx, assignments) => {
                         .input('PersonTypeId', mssql.BigInt, assignment.PersonTypeId)
                         .input('ActionCode', mssql.VarChar(30), assignment.ActionCode)
                         .input('ActionReasonCode', mssql.VarChar(30), assignment.ActionReasonCode)
+                        .input('ActionReason', mssql.VarChar(100), assignment.ActionReason)
                         .input('DeparmentId', mssql.BigInt, assignment.DepartmentId)
                         .input('BusinessUnitId', mssql.BigInt, assignment.BusinessUnitId)
                         .input('ManagerId', mssql.BigInt, assignment.ManagerId)
@@ -72,6 +73,7 @@ const setAssignment = async (ctx, assignments) => {
                                  @PersonTypeId,
                                  @ActionCode,
                                  @ActionReasonCode,
+                                 @ActionReason,
                                  @DeparmentId,
                                  @BusinessUnitId,
                                  @ManagerId,
@@ -111,18 +113,18 @@ const setAssignment = async (ctx, assignments) => {
                                  @LastUpdateDate`;
        
              Promise.resolve(result).then(function(value) { console.log(value); });                           
-       }
+       //}
        return pool;
 
     } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
-const setAssignmentDFF = async (ctx, assignmentsDFF) => {
+const setAssignmentDFF = async (ctx, assignmentDFF) => {
     try
     {
      const pool = await connector.getConnection(ctx);
-     for(const assignmentDFF of assignmentsDFF)
-      {
+     //for(const assignmentDFF of assignmentsDFF)
+      //{
        console.log('AssignmentNumber: ', assignmentDFF.AssignmentNumber);
        //console.log(assignmentDFF.LVVO_PROGRBENEFASG);
        let benefitPlanName = assignmentDFF.LVVO_PROGRBENEFASG.filter(i => { return i.Value == assignmentDFF.PROGRBENEFASG });
@@ -146,18 +148,16 @@ const setAssignmentDFF = async (ctx, assignmentsDFF) => {
                               @BenefitPlanName`;
       
             Promise.resolve(result).then(value => { console.log(value); });                           
-        }
+        //}
       return pool;
    } catch(e) { console.error(e); return Promise.reject(e);} 
 }
   
-const setAssignmentDetail = async (ctx, assignmentsDetail) => {
+const setAssignmentDetail = async (ctx, asgDet) => {
     try
     {
      const pool = await connector.getConnection(ctx); 
-     for(const asgDet of assignmentsDetail) {
-
-     } 
+     
      return pool;
     } catch(e) { console.error(e); return Promise.reject(e); }
 }

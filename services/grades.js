@@ -8,12 +8,12 @@ const getGrades = async (config, offset) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
       //console.log(response.data.items || {}); 
-      return response.data.items; 
+      return response.data; 
     }
      catch(e){  console.log(e); return {}; }
 }
@@ -26,12 +26,12 @@ const getSteps = async (config, href) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
       //console.log(response.data.items || {}); 
-      return response.data.items; 
+      return response.data; 
     }
      catch(e){  console.log(e); return {}; }
 }
@@ -44,12 +44,12 @@ const getRates = async (config, offset) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
       //console.log(response.data.items || {}); 
-      return response.data.items; 
+      return response.data; 
     }
      catch(e){  console.log(e); return {}; }
 }
@@ -58,16 +58,16 @@ const getRateValues = async (config, href) =>
 {
     const {auth} = config;
       try{
-          const response = await axios({ method: "GET", url: href, 
+          const response = await axios({ method: "GET", url: href+'&onlyData=true', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
       //console.log(response.data.items || {}); 
-      return response.data.items; 
+      return response.data; 
     }
      catch(e){  console.log(e); return {}; }
 }

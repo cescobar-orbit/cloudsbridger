@@ -4,11 +4,11 @@ const getEmployees = async (config,offset) => {
     const {baseURL, auth, pagesize} = config;
   
     try {
-          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV', 
+          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=MaritalStatusLOV,assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.MaritalStatusLOV,assignments.ActionReasonCodeLOV&onlyData=true', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     
@@ -40,18 +40,15 @@ const getDirectReports = async(config) => {
   const {baseURL, auth} = config;
 }
 
-const getAssignmentFlex = async(config) => {
-  const {baseURL, auth} = config;
-}
 
 const getPublicWorker = async(config, personId) => {
   const {baseURL, auth} = config;
   try{
-        const response = await axios({ method: "GET", url: baseURL + 'publicWorkers/'+ personId +'?expand=assignments', 
+        const response = await axios({ method: "GET", url: baseURL + 'publicWorkers/'+ personId +'?field=WorkerNumber&expand=assignments&onlyData=true', 
         auth: {username: auth.username, password: auth.password},
         headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            //'Content-Type': 'application/json'
         }
       });
 
@@ -66,6 +63,5 @@ module.exports = {
     getEmployees: getEmployees,
     getAssignment: getAssignment,
     getDirectReports: getDirectReports,
-    getAssignmentFlex: getAssignmentFlex,
     getPublicWorker: getPublicWorker
 };

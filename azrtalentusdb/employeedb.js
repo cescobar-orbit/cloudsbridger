@@ -3,13 +3,13 @@ const mssql = require('mssql');
 const connector = require('./connection.js');
 
  
-const setPerson = async (ctx, employees) => {
+const setPerson = async (ctx, person) => {
     
     try
     {
      const pool = await connector.getConnection(ctx);
-     for(const person of employees)
-     {
+     //for(const person of employees)
+     //{
        const result = await pool.request()
                          .input('PersonId', mssql.BigInt, person.PersonId)
                          .input('PersonNumber', mssql.VarChar(30), person.PersonNumber)
@@ -29,7 +29,8 @@ const setPerson = async (ctx, employees) => {
                          .input('DateOfBirth', mssql.VarChar(10), person.DateOfBirth)
                          .input('Ethnicity', mssql.VarChar(30), person.Ethnicity)
                          .input('Gender', mssql.VarChar(30), person.Gender)
-                         .input('MaritalStatus', mssql.VarChar(30), person.MaritalStatus)
+                         .input('MaritalStatusCode', mssql.VarChar(30), person.MaritalStatus)
+                         .input('MaritalStatusDesc', mssql.VarChar(100), person.MaritalStatusDesc)
                          .input('NationalId', mssql.BigInt, person.NationalId)
                          .input('NationalIdCountry', mssql.VarChar(30), person.NationalIdCountry)
                          .input('NationalIdType', mssql.BigInt, person.NationalIdType)
@@ -79,7 +80,8 @@ const setPerson = async (ctx, employees) => {
                                     @DateOfBirth,
                                     @Ethnicity,
                                     @Gender,
-                                    @MaritalStatus,
+                                    @MaritalStatusCode,
+                                    @MaritalStatusDesc,
                                     @NationalId,
                                     @NationalIdType,
                                     @NationalIdCountry,
@@ -108,19 +110,19 @@ const setPerson = async (ctx, employees) => {
                                     @LastUpdateDate`;
         
         Promise.resolve(result).then(value => { console.log(value); });                           
-      }
+      //}
      return pool;
 
     } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
-const setEmployee = async (ctx, employees) => {
+const setEmployee = async (ctx, emp) => {
  
   try
   {
    const pool = await connector.getConnection(ctx);
-   for(const emp of employees)
-   {
+   //for(const emp of employees)
+   //{
      const result = await pool.request()
                        .input('EventId', mssql.VarChar(10), 'UNKNOWN')
                        .input('PersonNumber', mssql.VarChar(30), emp.PersonNumber)
@@ -175,18 +177,17 @@ const setEmployee = async (ctx, employees) => {
                                   @LastUpdateDate`;
       
       Promise.resolve(result).then( value => { console.log(value); });                           
-    }
+    //}
    return pool;
   } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
-const setWorkerNumber = async (ctx, workerNumbers) => {
-
+const setWorkerNumber = async (ctx, wrk) => {
   try
   {
    const pool = await connector.getConnection(ctx);
-   for(const wrk of workerNumbers)
-    {
+   //for(const wrk of workerNumbers)
+    //{
      const result = await pool.request()
                      .input('PersonNumber', mssql.VarChar(30), wrk.PersonNumber)
                      .input('WorkerNumber', mssql.VarChar(30), wrk.WorkerNumber)
@@ -197,17 +198,17 @@ const setWorkerNumber = async (ctx, workerNumbers) => {
     
     Promise.resolve(result).then(value => { console.log(value); });                           
     return pool;
-   }
+   //}
   } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
 
-const setPersonType = async(ctx, personTypes) =>{
+const setPersonType = async(ctx, pt) =>{
   try
   {
    const pool = await connector.getConnection(ctx);
-   for(const pt of personTypes)
-   {
+   //for(const pt of personTypes)
+   //{
     const result = await pool.request()
                      .input('PersonTypeId', mssql.BigInt, pt.PersonTypeId)
                      .input('SystemPersonType', mssql.VarChar(80), pt.SystemPersonType)
@@ -223,7 +224,7 @@ const setPersonType = async(ctx, personTypes) =>{
                                @DefaultFlag`;
     
       Promise.resolve(result).then(value => { console.log(value); });                           
-  }
+  //}
   return pool;
  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
