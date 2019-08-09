@@ -4,7 +4,7 @@ const getOrganizations = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
     try{
-        const response = await axios({ method: "GET", url: baseURL + "organizations?expand=OrganizationDFF&limit="+pagesize+'&offset='+offset+'&onlyData=true', 
+        const response = await axios({ method: "GET", url: baseURL + "organizations?expand=OrganizationDFF&limit="+pagesize+'&offset='+offset+'&onlyData=false', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -26,7 +26,7 @@ const getOrganizationDFFLOV = async (config, baseURL) =>
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
+                //'Content-Type': 'application/vnd.oracle.adf.resourceitem+json'
             }
         });
     

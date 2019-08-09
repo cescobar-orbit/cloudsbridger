@@ -170,16 +170,22 @@ const setWorkRelationship = async (ctx, workRelations) => {
    for(const wrkRel of workRelations)
     {
      const result = await pool.request()
-                     .input('AssignmentNumber', mssql.VarChar(30), wrkRel.AssignmentNumber)
-                     .input('AccessTicketAllowed', mssql.VarChar(80), wrkRel.ACCESOBOLETOS)
-                     .input('BenefitPlanCode', mssql.VarChar(30), wrkRel.PROGRBENEFASG)
-                     .input('BenefitPlanName', mssql.VarChar(30), wrkRel.LVVO_ACCESOBOLETOS.filter(i => { return i.Value == assignmentDFF.PROGBENEFASG})[0].Description )
-                    
-                     .query`usp_TALENTUS_UDP_AssignmentDFF 
-                            @AssignmentNumber, 
-                            @AccessTicketAllowed, 
-                            @BenefitPlanCode,                            
-                            @BenefitPlanName`;
+                     .input('PersonNumber', mssql.VarChar(30), wrkRel.PerNumber)
+                     .input('WorkerNumber', mssql.VarChar(30), wrkRel.WrkRelWorkerNumber)
+                     .input('AssignmentNumber', mssql.VarChar(30), wrkRel.AsgNumber)
+                     .input('KronosPaymentRule', mssql.VarChar(30), wrkRel.WrkRelFlexGBLReglapagoKronos)
+                     .input('KronosCard', mssql.VarChar(30), wrkRel.WrkRelFlexGBLCarnetKronos)
+                     .input('KronosCardExpirationDate', mssql.VarChar(30), wrkRel.WrkRelFlexGBLExpiracionCarnet)
+                     .input('SenDataKronos', mssql.VarChar(30), wrkRel.WrkRelFlexGBLEnviarDatosKronos)
+
+                     .query`usp_TALENTUS_UDP_WorkRelationship 
+                            @PersonNumber, 
+                            @WorkerNumber, 
+                            @AssignmentNumber,                            
+                            @KronosPaymentRule,
+                            @KronosCard,
+                            @KronosCardExpirationDate,
+                            @SendDataKronos`;
     
           Promise.resolve(result).then(value => { console.log(value); });                           
       }
@@ -273,7 +279,7 @@ module.exports = {
     setAssignment: setAssignment,
     setAssignmentDFF: setAssignmentDFF,
     setAssignmentDetail: setAssignmentDetail,
-   // setWorkRelationship: setWorkRelationship,
+    setWorkRelationship: setWorkRelationship,
     setSalaryDetail: setSalaryDetail,
     setSalaryComponent: setSalaryComponent
 }

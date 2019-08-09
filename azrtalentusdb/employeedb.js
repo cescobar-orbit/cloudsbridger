@@ -278,6 +278,13 @@ const setPersonContact = async(ctx, contacts) => {
                      .input('BeneficiaryIndicator', mssql.Char(5), contact.ConBeneficiaryIndicator)
                      .input('Prefix', mssql.Char(5), contact.ConPrefix)
                      .input('SequenceNumber', mssql.Int, contact.ConSequenceNumber)
+                     .input('AddressLine1', mssql.VarChar(100), contact.ConAddressLine1)
+                     .input('AddressLine2', mssql.VarChar(100), contact.ConAddressLine2)
+                     .input('AddressLine3', mssql.VarChar(100), contact.ConAddressLine3)
+                     .input('PhoneNumber', mssql.VarChar(50), contact.ConPhoneNumber)
+                     .input('CountryPhoneNumber', mssql.Int, contact.ConPhoneNumber)
+                     .input('AreaCode', mssql.Int, contact.ConAreaCode)
+                     .input('EmergencyContact', mssql.Char(3), contact.ConEmergencyContact)
                     
                      .query`usp_TALENTUS_INS_PersonContact 
                               @PersonId,
@@ -295,7 +302,14 @@ const setPersonContact = async(ctx, contacts) => {
                               @MaritalStatus,
                               @BeneficiaryIndicator,
                               @Prefix,
-                              @SequenceNumber`;
+                              @SequenceNumber,
+                              @AddressLine1,
+                              @AddressLine2,
+                              @AddressLine3,
+                              @PhoneNumber,
+                              @CountryPhoneNumber,
+                              @AreaCode,
+                              @EmergencyContact`;
     
           Promise.resolve(result).then(value => { console.log(value); });                           
       }
@@ -304,7 +318,32 @@ const setPersonContact = async(ctx, contacts) => {
   catch(err){ console.error(err); return Promise.reject(err); }
 }
 
+const setPersonDetail = async (ctx, personDetails) => {
+  try 
+  {
+    const pool = await connector.getConnection(ctx);
 
+    for(const pd of personDetails)
+      {
+        const result = await pool.request()
+                     .input('PersonNumber', mssql.VarChar(30), pd.PerNumber)
+                     .input('BloodType', mssql.VarChar(5), pd.PerBloodType)
+                     .input('DateOfDeath', mssql.VarChar(10), pd.DateOfDeath)
+                    /* <PerPrimaryNID>300000047530393</PerPrimaryNID>
+                       <PerPrimaryNIDNumber>10405077-8</PerPrimaryNIDNumber>
+                    */
+                     .query`usp_TALENTUS_UDP_Person
+                              @PersonNumber,
+                              @BloodType,
+                              @DateOfDeath`;
+                              
+          Promise.resolve(result).then(value => { console.log(value); });                           
+    }
+    return pool;
+  }
+  catch(e){ console.error(err); return Promise.reject(err); }
+
+}
 
 module.exports = {
     setPerson: setPerson,
@@ -312,5 +351,6 @@ module.exports = {
     setWorkerNumber: setWorkerNumber,
     setDirectReports: setDirectReports,
     setPersonType: setPersonType,
-    setPersonContact: setPersonContact
+    setPersonContact: setPersonContact,
+    setPersonDetail: setPersonDetail
 }

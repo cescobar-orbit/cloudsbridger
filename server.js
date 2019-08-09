@@ -66,7 +66,7 @@ app.get('/workstructures/organizations',  async (req, res) => {
             
       organizations.forEach( async(org) => {
         console.time('Organizations starts.');
-        let hrefDFF = '';
+        
         if(org && org.length > 0) 
         {
           if(org.ClassificationCode != 'DEPARTMENT') 
@@ -96,37 +96,38 @@ app.get('/workstructures/organizations',  async (req, res) => {
       const response = await organization.getOrganizations(cfg.hcmAPI, offset);
       const organizations = response.items;
       hasMore =  response.hasMore;
-            
+      let orgs = [];
+      let orgDFFRows = [];
+
       organizations.forEach( async(org) => {
-        console.time('Organizations/Departments starts.');
-        let hrefDFF = '';
-        if(org && org.length > 0) 
+        console.time('Organizations/Departments');
+        if(org) 
         {
           const orgDFF = org.OrganizationDFF[0];
           if(org.ClassificationCode == 'DEPARTMENT') 
           {
-            if(orgDFF.links)
+            if(orgDFF)
             {
+              //console.log(orgDFF);
               let links = orgDFF.links;
+    
               links.forEach( async(link) => 
               {
                  hrefDFF = link.href;
-                 if(hrefDFF && hrefDFF.length > 0) 
+                 if(link.name == 'LVVO_AREA2') 
                   {
-                   const orgDFFExtra = await organization.getOrganizationDFFLOV(cfg.dbConfig, hrefDFF);
+                   const orgDFFExtra = await organization.getOrganizationDFFLOV(cfg.hcmAPI, link.href);
+                   //console.log(orgDFFExtra);
                    orgDFFLov = orgDFFExtra.filter( i => { return i.Value == orgDFF.AREA2 });
-                   if(orgDFFLov && orgDFFLov.length > 0) 
+                   if(orgDFFLov) 
                      Object.assign(orgDFF, {AreaDesc: orgDFFLov[0].Description, AreaValueId: orgDFFLov[0].ValueId});
                    else 
                      Object.assign(orgDFF, {AreaDesc: '', AreaValueId: null});
-                   
-                   console.log(org);
-                   const conOrg = await organizationdb.setOrganization(cfg.dbConfig, org);
-                   Promise.resolve(conOrg).then( oc => { oc.close(); });
-
+                  
                    delete orgDFF.links;
-                   const connOrgDFF = await organizationdb.setOrganizationDFF(cfg.dbConfig, orgDFF);
-                   Promise.resolve(connOrgDFF).then( odff => { odff.close(); });
+                   orgDFFRows.push(orgDFF);
+                   delete org.links;
+                   orgs.push(org);
                   }
                 });
              }
@@ -134,9 +135,15 @@ app.get('/workstructures/organizations',  async (req, res) => {
         }
       });
 
-       console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
-       offset = (pageNumber * cfg.hcmAPI.pagesize);
-       pageNumber = pageNumber + 1;
+      const conOrg = await organizationdb.setOrganization(cfg.dbConfig, orgs);
+      Promise.resolve(conOrg).then( oc => { oc.close(); });
+      setTimeout(()=>{ console.log('Taking a nap 10s before OrganizationDFF...'); }, 10000);
+      const connOrgDFF = await organizationdb.setOrganizationDFF(cfg.dbConfig, orgDFFRows);
+      Promise.resolve(connOrgDFF).then( odff => { odff.close(); });
+
+      console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
+      offset = (pageNumber * cfg.hcmAPI.pagesize);
+      pageNumber = pageNumber + 1;
        
        if(!hasMore) { console.timeEnd('Organizations/Departments'); break; }
 
@@ -292,7 +299,7 @@ app.get('/employees', async (req, res) => {
       const emps = response.items;
       hasMore = response.hasMore;
      
-      if(emps && emps.length > 0) 
+      if(emps) 
       {
         emps.forEach( async(emp) => 
         {
@@ -301,7 +308,7 @@ app.get('/employees', async (req, res) => {
           console.log(maritalStatusLov);
           Object.assign(emp, {MaritalStatusDesc: maritalStatusLov[0].Meaning});
 
-          if(assignments && assignments.length > 0)
+          if(assignments)
           { 
             assignments.forEach( async(a) => 
             {
@@ -332,7 +339,7 @@ app.get('/employees', async (req, res) => {
           }
 
           const publicWorker = await employee.getPublicWorker(cfg.hcmAPI, emp.PersonId);
-          if(publicWorker && publicWorker.assignments.length > 0)
+          if(publicWorker)
           {
             const workerNumber = publicWorker.assignments[0].WorkerNumber;
             console.log('PersonId: ', emp.PersonId, 'WorkerNumber: ', workerNumber);
@@ -367,26 +374,30 @@ app.get('/employees', async (req, res) => {
   });
 
 app.get('/person-contacts', async (req, res) => {
-    const FileXML = __dirname + "/public/COPA_WORKER_20190607092638.xml";
+    const FileXML = __dirname + "/public/COPA_WORKER_20190723081017.xml";
+  
     fs.readFile(FileXML, 'utf8', async(err, xml) => {
        if(!err) 
        {
+         let personContacts;
          Xml2JS.parseString(xml, {trim:true}, async(error, json) => {
            if(error) { console.error(error); }
            // find all elements: returns xml2js JSON of the element
-           const personContacts = xpath.find(json, "//Person_Contact/Person_Contact_Details/Person_Contact_Detail");
-           console.log(personContacts);
-           connPersonContact = await employeedb.setPersonContact(cfg.dbConfig, personContacts);
-           Promise.resolve(connPersonContact).then( pc => { pc.close(); });  
-         });
+           personContacts = xpath.find(json, "//Person_Contact/Person_Contact_Details/Person_Contact_Detail");
+        });
+        console.dir(personContacts);
+        const connPersonContact = await employeedb.setPersonContact(cfg.dbConfig, personContacts);
+        Promise.resolve(connPersonContact).then( pc => { pc.close(); });           
+
        } 
      });
+ 
  });
 
  app.get('/worker-info', async (req, res) => {
    try
    {
-    const FileXML = __dirname + "/public/COPA_WORKER_20190607092638.xml";
+    const FileXML = __dirname + "/public/COPA_WORKER_20190723081017.xml";
     fs.readFile(FileXML, 'utf8', async(err, xml) => {
       if(!err) 
       {
@@ -420,7 +431,7 @@ app.get('/person-contacts', async (req, res) => {
            Promise.resolve(connPD).then(pd => { pd.close(); });
 
            const assignmentDetail = xpath.find(json, "//Assignment_Details/Assignment_Detail");
-           //console.log(assignmentDetail);
+           console.log(assignmentDetail);
            const connAsgDet = await assignmentdb.setAssignmentDetail(cfg.dbConfig, assignmentDetail);  
            Promise.resolve(connAsgDet).then( asgd => asgd.close() );                
         });

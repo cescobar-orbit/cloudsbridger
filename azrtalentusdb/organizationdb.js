@@ -2,13 +2,12 @@
 const mssql = require('mssql');
 const connector = require('./connection');
  
-const setOrganization = async (ctx, org) => {
-      
+const setOrganization = async (ctx, organizations) => {
     try
     {
      const pool = await connector.getConnection(ctx);
-     //for(const organization of organizations)
-     //{
+     for(const org of organizations)
+     {
        const result = await pool.request()
                          .input('OrganizationId', mssql.BigInt, org.OrganizationId)
                          .input('OrganizationCode', mssql.VarChar(120), org.OrgCode)
@@ -35,23 +34,23 @@ const setOrganization = async (ctx, org) => {
                                     @LastUpdateDate`;
         
         Promise.resolve(result).then(value => { console.log(value); });                           
-     //}
+     }
      return pool;
-    } catch(e) { console.error(e); return Promise.reject(err);} 
+    } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
 const setOrganizationDFF = async (ctx, orgFlex) => {
   try
   {
    const pool = await connector.getConnection(ctx);
-   //for(const field of orgFlex)
-   //{
+   for(const field of orgFlex)
+   {
      const result = await pool.request()
-                       .input('OrganizationId', mssql.BigInt, orgFlex.OrganizationId)
-                       .input('CostCenter', mssql.VarChar(50), orgFlex.CENTROCOSTOS2)
-                       .input('AreaCode', mssql.VarChar(50), orgFlex.AREA2)
-                       .input('AreaDesc', mssql.VarChar(100), orgFlex.AreaDesc)
-                       .input('AreaValueId', mssql.BigInt, orgFlex.AreaValueId)
+                       .input('OrganizationId', mssql.BigInt, field.OrganizationId)
+                       .input('CostCenter', mssql.VarChar(50), field.CENTROCOSTOS2)
+                       .input('AreaCode', mssql.VarChar(50), field.AREA2)
+                       .input('AreaDesc', mssql.VarChar(100), field.AreaDesc)
+                       .input('AreaValueId', mssql.BigInt, field.AreaValueId)
 
                        .query`usp_TALENTUS_UDP_OrganizationDFF 
                                   @OrganizationId,
@@ -61,7 +60,7 @@ const setOrganizationDFF = async (ctx, orgFlex) => {
                                   @AreaValueId`;
       
       Promise.resolve(result).then( value => { console.log(value); });                           
-   //} 
+    } 
     return pool;
   } catch(e) { console.error(e); return Promise.reject(e);} 
 }
@@ -70,7 +69,7 @@ const setOrganizationDFF = async (ctx, orgFlex) => {
 const setDepartmentTree = async (ctx, departmentNodes) => {
   try
   {
-   const pool = await connector.getConnection();
+   const pool = await connector.getConnection(ctx);
 
    for(const department of departmentNodes)
    {
@@ -88,7 +87,7 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
       Promise.resolve(result).then(function(value) { console.log(value); });                           
     }
     pool.close();
-  } catch(e) { console.error(e); return Promise.reject(err);} 
+  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
 module.exports = {

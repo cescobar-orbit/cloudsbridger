@@ -4,7 +4,7 @@ const getEmployees = async (config,offset) => {
     const {baseURL, auth, pagesize} = config;
   
     try {
-          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=MaritalStatusLOV,assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.MaritalStatusLOV,assignments.ActionReasonCodeLOV&onlyData=true', 
+          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=MaritalStatusLOV,assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.ActionReasonCodeLOV&onlyData=true', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
