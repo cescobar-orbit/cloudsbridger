@@ -2,19 +2,20 @@
 const mssql = require('mssql');
 const connector = require('./connection');
  
-const setPosition = async (ctx, pos) => {
+const setPosition = async (ctx, positions) => {
     
     try
     {   
         const pool = await connector.getConnection(ctx);
-        //for(const pos of positions)
-          //{
-             console.log(pos);
+        for(const pos of positions)
+          {
+             //console.log(pos);
              const request = await pool.request()
                     .input('PositionId', mssql.BigInt, pos.PositionId)
                     .input('PositionCode', mssql.VarChar(30), pos.PositionCode)
                     .input('PositionName', mssql.VarChar(240), pos.Name)
                     .input('PositionType', mssql.VarChar(30), pos.PositionType)
+                    .input('EffectiveDate', mssql.VarChar(10), null)
                     .input('EffectiveStartDate', mssql.VarChar(10), pos.EffectiveStartDate)
                     .input('EffectiveEndDate', mssql.VarChar(10), pos.EffectiveEndDate)
                     .input('BusinessUnitId', mssql.BigInt, pos.BusinessUnitId)
@@ -42,6 +43,7 @@ const setPosition = async (ctx, pos) => {
                         @PositionCode, 
                         @PositionName,
                         @PositionType,
+                        @EffectiveDate,
                         @EffectiveStartDate,
                         @EffectiveEndDate,
                         @BusinessUnitId,
@@ -65,32 +67,35 @@ const setPosition = async (ctx, pos) => {
                         @LastUpdateDate`;
                 
              Promise.resolve(result).then(value => { console.log(value); });
-            //}
+            }
       return pool;
     } catch(err) {
-       console.error(err);
+       console.error(err); Promise.reject(err);
     }    
 }
 
-const setPositionCustomerFlex = async (ctx, position) => {    
+const setPositionCustomerFlex = async (ctx, positions) => {    
     try
     {
         const pool = await connector.getConnection(ctx); 
         
-        //for(const position of positions)
-         //{
+        for(const position of positions)
+        {
           const positionDFF = position.PositionCustomerFlex[0];
-          let benefitPlanName = positionDFF.LVVO_PROGBENEFPOS.filter( i => { return i.Value == positionDFF.PROGBENEFPOS});
-          if(benefitPlanName.length = 0){
-            benefitPlanName = [];
-            benefitPlanName.push({Description: ''});
+          let benefitPlan = positionDFF.LVVO_PROGBENEFPOS.filter( i => { return i.Value == positionDFF.PROGBENEFPOS});
+         
+          if(benefitPlan && benefitPlan.length == 0) 
+          {
+            benefitPlan = [];
+            benefitPlan.push({Description: ''});
           }
-            
+          let benefitPlanName = benefitPlan[0].Description;
+          console.log('BenefitPlanName: ', benefitPlanName);
           const result = await pool.request()
                 .input('PositionId', mssql.BigInt, positionDFF.PositionId)
                 .input('Station', mssql.VarChar(150), positionDFF.ESTACION)
                 .input('BenefitPlanCode', mssql.VarChar(50), positionDFF.PROGBENEFPOS)
-                .input('BenefitPlanName', mssql.VarChar(100), benefitPlanName.Description)
+                .input('BenefitPlanName', mssql.VarChar(100), benefitPlanName)
                 .input('ClassificationCode', mssql.VarChar(200), positionDFF.TIPOPOSICION)
                 .input('RiskLevel', mssql.VarChar(100), positionDFF.CLASIFRIESGO)
                 .query`usp_TALENTUS_UDP_PositionCustomerFlex
@@ -102,11 +107,11 @@ const setPositionCustomerFlex = async (ctx, position) => {
                         @RiskLevel`;
             
             Promise.resolve(result).then(value => { console.log(value) });
-        //}
+        }
       return pool;
     } catch(err) {
        console.error(err);
-       //return Promise.reject(err);
+       return Promise.reject(err);
     }    
 }
 

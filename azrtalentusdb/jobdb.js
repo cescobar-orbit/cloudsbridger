@@ -2,16 +2,18 @@
 const mssql = require('mssql');
 const connector = require('./connection');
 
-const setJob = async (ctx, job) => {
+const setJob = async (ctx, jobs) => {
     try
     {
      const pool = await connector.getConnection(ctx);
-    
-        const result = pool.request()
+     for(const job of jobs)
+     {
+        const result = await pool.request()
               .input('JobId', mssql.BigInt, job.JobId)
               .input('JobName', mssql.VarChar(240), job.Name)
               .input('JobCode', mssql.VarChar(30), job.JobCode)
               .input('JobFamilyId', mssql.BigInt, job.JobFamilyId)
+              .input('EffectiveDate', mssql.VarChar(10), null)
               .input('EffectiveStartDate', mssql.VarChar(30), job.EffectiveStartDate)
               .input('EffectiveEndDate', mssql.VarChar(30), job.EffectiveEndDate)
               .input('ActiveStatus', mssql.VarChar(30), job.ActiveStatus)
@@ -28,9 +30,10 @@ const setJob = async (ctx, job) => {
                         @JobId,
                         @JobName, 
                         @JobCode,
-                        @JobFamilyId,
+                        @JobFamilyId,                        
                         @EffectiveStartDate,
                         @EffectiveEndDate,
+                        @EffectiveDate,
                         @ActiveStatus,
                         @SetId,
                         @ManagerLevel,
@@ -43,8 +46,9 @@ const setJob = async (ctx, job) => {
                         @LastUpdateDate`;
 
             Promise.resolve(result).then(value => { console.log(value); });                
-      return pool;
-    } catch(e) { console.error(e); }  
+     }
+     return pool;
+    } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
 const setJobFamily = async (ctx, JobFamily) => {

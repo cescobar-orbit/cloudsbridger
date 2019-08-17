@@ -14,7 +14,7 @@ const setGrade = async (ctx, grade) => {
     try{
       const pool =  await new mssql.ConnectionPool(config).connect();
       
-        const result = pool.request()
+        const result = await pool.request()
               .input('GradeId', mssql.BigInt, grade.GradeId)
               .input('GradeCode', mssql.VarChar(120), grade.GradeCode)
               .input('GradeName', mssql.VarChar(240), grade.GradeName)
@@ -40,7 +40,7 @@ const setGrade = async (ctx, grade) => {
             Promise.resolve(result).then(function(value) { console.log(value); });
         
     return pool;
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error(e); return Promise.reject(e); }
 }
 
 const setStep = async (ctx, gradeId, step) => {
@@ -55,8 +55,9 @@ const setStep = async (ctx, gradeId, step) => {
     try 
     {
      const pool =  await new mssql.ConnectionPool(config).connect();        
-     
-      const result = pool.request()
+console.log(gradeId);     
+      const result = await pool.request()
+         .input('GradeId', mssql.BigInt, gradeId)
          .input('GradeStepId', mssql.BigInt, step.GradeStepId)
          .input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate)
          .input('EffectiveEndDate', mssql.VarChar(10), step.EffectiveEndDate)
@@ -76,7 +77,7 @@ const setStep = async (ctx, gradeId, step) => {
         Promise.resolve(result).then(function(value) { console.log(value); });
   
         return pool;
-   } catch(e) { console.error(e); } 
+   } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
 
@@ -93,7 +94,7 @@ const setRate = async (ctx, rate) => {
   {
    const pool =  await new mssql.ConnectionPool(config).connect();        
    
-    const result = pool.request()
+    const result = await pool.request()
        .input('RateId', mssql.BigInt, rate.RateId)
        .input('EffectiveStartDate', mssql.VarChar(10), rate.EffectiveStartDate)
        .input('EffectiveEndDate', mssql.VarChar(10), rate.EffectiveEndDate)
@@ -121,7 +122,7 @@ const setRate = async (ctx, rate) => {
       Promise.resolve(result).then(function(value) { console.log(value); });   
    
   return pool;
- } catch(e) { console.error(e); } 
+ } catch(e) { console.error(e); return Promise.reject(e); } 
 
 }
 
@@ -140,7 +141,7 @@ const setRateValue = async (ctx, rateValues) => {
    const pool =  await new mssql.ConnectionPool(config).connect();        
    for(const rateValue of rateValues)
    {
-    const result = pool.request()
+    const result = await pool.request()
        .input('RateValueId', mssql.BigInt, rateValue.RateValueId)
        .input('EffectiveStartDate', mssql.VarChar(10), rateValue.EffectiveStartDate)
        .input('EffectiveEndDate', mssql.VarChar(10), rateValue.EffectiveEndDate)
@@ -159,13 +160,10 @@ const setRateValue = async (ctx, rateValues) => {
               @EffectiveStartDate,
               @EffectiveEndDate`;
               
-      const promiseResult = Promise.resolve(result);
-            promiseResult.then(function(value) {
-                  console.log(value);
-      });   console.dir(Promise.resolve(result));
+      Promise.resolve(result).then(function(value) { console.log(value); });   
    }
    return pool;
- } catch(e) { console.error(e); } 
+ } catch(e) { console.error(e); Promise.reject(e); } 
 
 }
 

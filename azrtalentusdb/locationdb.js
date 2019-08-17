@@ -14,6 +14,7 @@ const setLocation = async (ctx, locations) => {
                 .input('LocationCode', mssql.VarChar(120), loc.LocationCode)
                 .input('LocationName', mssql.VarChar(60), loc.LocationName)
                 .input('Description', mssql.VarChar(255), loc.Description)
+                .input('EffectiveDate', mssql.VarChar(10), null)
                 .input('EffectiveStartDate', mssql.VarChar(10), loc.EffectiveStartDate)
                 .input('EffectiveEndDate', mssql.VarChar(10), loc.EffectiveDate)
                 .input('SetId', mssql.BigInt, loc.SetId)
@@ -43,6 +44,7 @@ const setLocation = async (ctx, locations) => {
                         @LocationName,
                         @LocationCode,
                         @Description,
+                        @EffectiveDate,
                         @EffectiveStartDate,
                         @EffectiveEndDate,
                         @SetId,
@@ -71,7 +73,7 @@ const setLocation = async (ctx, locations) => {
             Promise.resolve(result).then(value => {console.log(value); });
         }      
        return pool;
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error(e); return Promise.reject(e); }
 }
 
 module.exports = {

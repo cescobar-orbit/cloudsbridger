@@ -21,35 +21,37 @@ const port = 5000;
 
 let cfg;
 const env = process.env.NODE_ENV;
-if(env.trim() === "development") {
+console.log(env);
+if(env.trim() === "dev") {
     cfg = require('./config/development');
    //console.log(cfg);
 }
-else if(env == 'staging') {
-    cfg = JSON.parse(fs.readFileSync('./config/staging.json', 'utf8'));
+else if(env.trim() === 'staging') {
+    cfg = require('./config/staging');
 }
-else if(env == 'production') {
-    cfg = JSON.parse(fs.readFileSync('./config/production.json', 'utf8'));
+else if(env.trim() === 'prod') {
+    cfg = require('./config/production');
 }
-
 //console.log(cfg.hcmAPI);
 
 app.get('/workstructures/locations', async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = true;
-
+    console.log('Locations');
     do 
     {
       const response = await location.getLocations(cfg.hcmAPI, offset);
       const locations  = response.items;
       hasMore = response.hasMore;
+      
       const connLoc = await locationdb.setLocation(cfg.dbConfig, locations);
-      Promise.resolve(connLoc).then(cloc => {cloc.close()});
+      Promise.resolve(connLoc).then(cloc => { cloc.close(); });
       console.log('Locations offset: ', offset, ' pageNumber: ', pageNumber);   
+      
       pageNumber = pageNumber + 1;
       offset = (pageNumber * cfg.hcmAPI.pagesize);
-      if(!hasMore) break;
+      if(!hasMore) { console.timeEnd('Locations'); break; }
     } while(hasMore)
 });
 
@@ -57,27 +59,23 @@ app.get('/workstructures/organizations',  async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = false;
-
+    let orgs = [];
+    console.time('Organizations');
+    
     do
     {
+      console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
       const response = await organization.getOrganizations(cfg.hcmAPI, offset);
       const organizations = response.items;
       hasMore =  response.hasMore;
             
       organizations.forEach( async(org) => {
-        console.time('Organizations starts.');
-        
-        if(org && org.length > 0) 
-        {
-          if(org.ClassificationCode != 'DEPARTMENT') 
-          {
-           const connOrg = await organizationdb.setOrganization(cfg.dbConfig, org);
-           Promise.resolve(connOrg).then( o => { o.close(); });
-          }
-        }
+        if(org && org.ClassificationCode != 'DEPARTMENT') 
+           departments.push(org);
       });
-
-       console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
+       const connOrg = await organizationdb.setOrganization(cfg.dbConfig, orgs);
+       Promise.resolve(connOrg).then( o => { o.close(); });
+       
        offset = (pageNumber * cfg.hcmAPI.pagesize);
        pageNumber = pageNumber + 1;
        
@@ -90,67 +88,56 @@ app.get('/workstructures/organizations',  async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = false;
+    let departments = [];
+    const orgDFFRows = [];
 
     do
     {
+      console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
       const response = await organization.getOrganizations(cfg.hcmAPI, offset);
       const organizations = response.items;
       hasMore =  response.hasMore;
-      let orgs = [];
-      let orgDFFRows = [];
 
       organizations.forEach( async(org) => {
         console.time('Organizations/Departments');
-        if(org) 
+        //console.log(org);
+        if(org && org.ClassificationCode == 'DEPARTMENT') 
         {
           const orgDFF = org.OrganizationDFF[0];
-          if(org.ClassificationCode == 'DEPARTMENT') 
+          if(orgDFF)
           {
-            if(orgDFF)
-            {
               //console.log(orgDFF);
-              let links = orgDFF.links;
-    
-              links.forEach( async(link) => 
-              {
-                 hrefDFF = link.href;
-                 if(link.name == 'LVVO_AREA2') 
-                  {
-                   const orgDFFExtra = await organization.getOrganizationDFFLOV(cfg.hcmAPI, link.href);
-                   //console.log(orgDFFExtra);
-                   orgDFFLov = orgDFFExtra.filter( i => { return i.Value == orgDFF.AREA2 });
-                   if(orgDFFLov) 
-                     Object.assign(orgDFF, {AreaDesc: orgDFFLov[0].Description, AreaValueId: orgDFFLov[0].ValueId});
-                   else 
-                     Object.assign(orgDFF, {AreaDesc: '', AreaValueId: null});
-                  
-                   delete orgDFF.links;
-                   orgDFFRows.push(orgDFF);
-                   delete org.links;
-                   orgs.push(org);
-                  }
-                });
-             }
+              let lvvoArea2Link = orgDFF.links.filter( l => { return l.name == 'LVVO_AREA2'} );
+              //console.log('lvvoArea2Link', lvvoArea2Link[0].href);
+              let href = lvvoArea2Link[0].href;
+              const lvvoArea2 = await organization.getOrganizationDFFLOV(cfg.hcmAPI, href);
+              //console.log(lvvoArea2);
+              const orgDFFLov = lvvoArea2.filter( i => { return i.Value == orgDFF.AREA2 });
+              console.log('orgDFFLov: ', orgDFFLov);
+              
+              Object.assign(orgDFF, {AreaDesc: orgDFFLov[0].Description, AreaValueId: orgDFFLov[0].ValueId});
+            
+              delete orgDFF.links;
+              orgDFFRows.push(orgDFF);
+            }
+            delete org.links;
+            departments.push(org);
           }
-        }
-      });
-
-      const conOrg = await organizationdb.setOrganization(cfg.dbConfig, orgs);
-      Promise.resolve(conOrg).then( oc => { oc.close(); });
-      setTimeout(()=>{ console.log('Taking a nap 10s before OrganizationDFF...'); }, 10000);
+      });   
+     const conOrg = await organizationdb.setOrganization(cfg.dbConfig, departments);
+     Promise.resolve(conOrg).then( oc => { oc.close(); });
+      //console.log('orgDFFRows: ', orgDFFRows);
       const connOrgDFF = await organizationdb.setOrganizationDFF(cfg.dbConfig, orgDFFRows);
       Promise.resolve(connOrgDFF).then( odff => { odff.close(); });
-
-      console.log('Organization offset: ', offset, ' PageNumber: ', pageNumber);
+      
       offset = (pageNumber * cfg.hcmAPI.pagesize);
       pageNumber = pageNumber + 1;
        
        if(!hasMore) { console.timeEnd('Organizations/Departments'); break; }
 
     } while(hasMore);
+    
  });
-
-
 
 
 app.get('/workstructures/jobFamilies', async (req, res) => {
@@ -179,25 +166,26 @@ app.get('/workstructures/jobs',  async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = true;
-    
+    let jobRows = [];
+
+    console.time('Jobs');
+    console.log('Jobs offset: ', offset, ' pageNumber: ', pageNumber);
     do 
     { 
      const response = await job.getJobs(cfg.hcmAPI, offset);
      hasMore = response.hasMore;
      const jobs = response.items;
-     if(jobs)
-     {
-      jobs.forEach( async(job) => 
-      {
-       const connJob = await jobdb.setJob(cfg.dbConfig, job);
-       Promise.resolve(connJob).then( j => { j.close(); });
-      });
-     }
+     
+     jobs.forEach( async(job) => {
+       jobRows.push(job); 
+     });
 
-     console.log('Jobs offset: ', offset, ' pageNumber: ', pageNumber);
+     const connJob = await jobdb.setJob(cfg.dbConfig, jobRows);
+     Promise.resolve(connJob).then( j => { j.close(); });
+
      offset = (pageNumber * cfg.hcmAPI.pagesize);
      pageNumber = pageNumber + 1;
-     if(!hasMore) break;
+     if(!hasMore) { console.endTime('Jobs'); break; }
     } while(hasMore);
 
 });
@@ -205,34 +193,39 @@ app.get('/workstructures/jobs',  async (req, res) => {
 app.get('/workstructures/positions', async (req, res) => {
   let offset = 0;
   let pageNumber = 1;
-  let hasMore = true;
+  let hasMore = false;
 
+  console.time('Positions');
   do 
    {
+      console.log('Positions offset: ', offset, 'pageNumber: ', pageNumber);
       const response = await position.getPositions(cfg.hcmAPI, offset);
       let positions = response.items; 
       hasMore = response.hasMore;
-      
+      let positionRows = [];
+      let positionFlex = [];
+
       if(positions)
       {
         positions.forEach( async(positionRaw) => {
-  
-          const connPos = await positiondb.setPosition(cfg.dbConfig, positionRaw);
-          Promise.resolve(connPos).then( po => { po.close(); });
-        
-          const connPosFlex = await positiondb.setPositionCustomerFlex(cfg.dbConfig, positionRaw);  
-          Promise.resolve(connPosFlex).then(poFlex => {poFlex.close(); });
-      
+          positionRows.push(positionRaw);
+          positionFlex.push(positionRaw);
         });
       }
-      console.log('Positions offset: ', offset, 'pageNumber: ', pageNumber);
+
+      const connPos = await positiondb.setPosition(cfg.dbConfig, positionRows);
+      Promise.resolve(connPos).then( po => { po.close(); });
+        
+      const connPosFlex = await positiondb.setPositionCustomerFlex(cfg.dbConfig, positionRows);  
+      Promise.resolve(connPosFlex).then(poFlex => {poFlex.close(); });
+
       offset = (pageNumber * cfg.hcmAPI.pagesize);
       pageNumber = pageNumber + 1;
       
-      if(!hasMore) break;
+      if(!hasMore) {  console.timeEnd('Positions'); break; }
       
   } while(hasMore);
-
+  
 });
 
 
@@ -240,25 +233,32 @@ app.get('/workstructures/grades',  async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = true;
+    console.time('Grades');
     do
-     { 
+     {
+      console.log('Grades offset: ', offset, ' pageNumber: ', pageNumber);  
       const response = await grade.getGrades(cfg.hcmAPI, offset);
       const grades = response.items;
       hasMore = response.hasMore;
-      
-      if(grades){
+      let gradesRows = [];
+      let gradeSteps = [];
+
+      if(grades)
+      {
         grades.forEach( async(grade) => {
-          const connGrade = await gradedb.setGrade(cfg.dbConfig, grade);
-          Promise.resolve(connGrade).then( g => { g.close(); });
-          
-          const connGradeStep = await gradedb.setStep(cfg.dbConfig, grade);
-          Promise.resolve(connGradeStep).then( gs => { gs.close(); });
+          gradesRows.push(grade);
+          gradeSteps.push(grade);
         });
       }
+      const connGrade = await gradedb.setGrade(cfg.dbConfig, grade);
+      Promise.resolve(connGrade).then( g => { g.close(); });
+          
+      const connGradeStep = await gradedb.setStep(cfg.dbConfig, grade);
+      Promise.resolve(connGradeStep).then( gs => { gs.close(); });      
       
-      console.log('Grades offset: ', offset, ' pageNumber: ', pageNumber);
       offset = (pageNumber * cfg.hcmAPI.pagesize);
       pageNumber =  pageNumber + 1;
+      if(!hasMore) { console.timeEnd('Grades');  break; }
     } while(hasMore);
 });
 

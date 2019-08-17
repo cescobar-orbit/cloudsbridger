@@ -22,7 +22,7 @@ const getOrganizationDFFLOV = async (config, baseURL) =>
 {
     const {auth} = config;
     try{
-        const response = await axios({ method: "GET", url: baseURL, 
+        const response = await axios({ method: "GET", url: baseURL+'?fields=ValueId,Value,Description&onlyData=true', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',

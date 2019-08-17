@@ -1,34 +1,22 @@
 {
   "name": "talentusinitalload",
   "version": "1.0.0",
-  "description": "This process performs an initial load data from HCM to TalentusDB on Azure Cloud in order to populate the database with the data needed to star designing the processes to integrate several systems.",
-  "main": "index.js",
+  "description": "Talentus app to seed databases from Oracle HCM Cloud",
+  "main": "server.js",
+  "dependencies": {},
+  "devDependencies": {},
   "scripts": {
-    "start": "SET NODE_ENV=development & node --max_old_space_size=500096 server.js",
-    "staging": "NODE_ENV=staging node --max_old_space_size=500096 server.js",
-    "production": "NODE_ENV=production node  --max_ol_space_size=500096 server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "start": "SET NODE_ENV=staging & node --max_old_space_size=500096 server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cescobar-orbit/cloudsbridger.git"
   },
   "author": "caescobar",
   "license": "ISC",
-  "dependencies": {
-    "async": "^2.6.2",
-    "axios": "^0.19.0",
-    "config-js": "^1.1.10",
-    "dom-parser": "^0.1.6",
-    "dotenv": "^8.0.0",
-    "express": "^4.16.4",
-    "json2csv": "^4.5.1",
-    "mssql": "^5.1.0",
-    "request": "^2.88.0",
-    "xml2js": "^0.4.19",
-    "xml2js-xpath": "^0.10.0",
-    "xpath": "0.0.27",
-    "snyk": "^1.199.0"
+  "bugs": {
+    "url": "https://github.com/cescobar-orbit/cloudsbridger/issues"
   },
-  "devDependencies": {},
-  "keywords": [],
-  "snyk": true
+  "homepage": "https://github.com/cescobar-orbit/cloudsbridger#readme"
 }

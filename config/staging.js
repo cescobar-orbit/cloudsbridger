@@ -1,18 +1,28 @@
 const config = {
-        hcmAPI:{
-            baseURL: "https://ejom-dev1.fa.us6.oraclecloud.com/hcmRestApi/resources/latest",
-            auth:{
-                username: "Integration.Specialist",
-                password: "Welcome2019"
-              }
+   hcmAPI:{
+         baseURL: "https://ejom-test.fa.us6.oraclecloud.com:443/hcmRestApi/resources/latest/",
+         auth:{
+             username: "integration.specialist",
+             password: "Welcome2019"
+           },
+        pagesize: 400
+       },
+     dbConfig:{
+         host: "sql-test-tibco-pass.database.windows.net",
+         username: "svcTalentusAdminLogin",
+         password: "Copa2019!",
+         database: "COPA_TalentusDB",
+         port: 1433,
+         options: {        
+              encrypt: true,
+              requestTimeout: -1
           },
-        dbConfig:{
-            host: "sql-int-tibco-pass.database.windows.net",
-            username: "talentusAdmin",
-            password: "CopaMax9",
-            database: "TalentusDB",
-            port: "1433"
-          }   
+          pool: {
+              max: 1000,
+              min: 0,
+              idleTimeoutMillis: 300000
+          }
+       }   
     };
    
     module.exports = config;

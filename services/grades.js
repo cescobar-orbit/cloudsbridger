@@ -4,7 +4,7 @@ const getGrades = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + collection + "?limit=" + pagesize+'&offset='+offset, 
+          const response = await axios({ method: "GET", url: baseURL + "grades?limit=" + pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',

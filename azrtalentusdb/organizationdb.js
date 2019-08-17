@@ -16,6 +16,7 @@ const setOrganization = async (ctx, organizations) => {
                          .input('ClassificationCode', mssql.VarChar(255), org.ClassificationCode)
                          .input('LocationId', mssql.BigInt, org.LocationId)
                          .input('InternalAddressLine', mssql.VarChar(80), org.IntetnalAddressLine)
+                         .input('EffectiveDate', mssql.VarChar(10), null)
                          .input('EffectiveStartDate', mssql.VarChar(10), org.EffectiveStartDate)
                          .input('EffectiveEndDate', mssql.VarChar(10), org.EffectiveEndDate)
                          .input('CreationDate', mssql.VarChar(30), org.CreationDate)
@@ -28,6 +29,7 @@ const setOrganization = async (ctx, organizations) => {
                                     @Status,
                                     @LocationId,
                                     @InternalAddressLine,
+                                    @EffectiveDate,
                                     @EffectiveStartDate,
                                     @EffectiveEndDate,
                                     @CreationDate,
@@ -86,7 +88,7 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
       
       Promise.resolve(result).then(function(value) { console.log(value); });                           
     }
-    pool.close();
+    return pool;
   } catch(e) { console.error(e); return Promise.reject(e);} 
 }
 
