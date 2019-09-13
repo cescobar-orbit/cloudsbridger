@@ -1,19 +1,13 @@
 'use strict'
 const mssql = require('mssql');
+const connector = require('./connection.js');
 
-
-const setGrade = async (ctx, grade) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-
-    try{
-      const pool =  await new mssql.ConnectionPool(config).connect();
-      
+const setGrade = async (ctx, grades) => {
+    try
+    {
+      const pool =  await connector.getConnection(ctx);
+      for(const grade of grades)
+      { 
         const result = await pool.request()
               .input('GradeId', mssql.BigInt, grade.GradeId)
               .input('GradeCode', mssql.VarChar(120), grade.GradeCode)
@@ -38,62 +32,47 @@ const setGrade = async (ctx, grade) => {
                         @LastUpdateDate`;
             
             Promise.resolve(result).then(function(value) { console.log(value); });
-        
+      }         
     return pool;
     } catch(e) { console.error(e); return Promise.reject(e); }
 }
 
-const setStep = async (ctx, gradeId, step) => {
-    const config = {};
-    config.server = ctx.host;
-    config.user = ctx.username;
-    config.password = ctx.password;
-    config.database = ctx.database;
-    config.options = ctx.options;
-    config.pool = ctx.pool;
-
+const setStep = async (ctx, steps) => {
     try 
     {
-     const pool =  await new mssql.ConnectionPool(config).connect();        
-console.log(gradeId);     
-      const result = await pool.request()
-         .input('GradeId', mssql.BigInt, gradeId)
-         .input('GradeStepId', mssql.BigInt, step.GradeStepId)
-         .input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate)
-         .input('EffectiveEndDate', mssql.VarChar(10), step.EffectiveEndDate)
-         .input('GradeStepName', mssql.VarChar(240), step.GradeStepName)
-         .input('GradeStepSequence', mssql.Int, step.GradeStepSequence)
-         .input('CeilingStepFlag', mssql.VarChar(5), step.CeilingStepFlag)
-         .input('GradeId', mssql.BigInt, gradeId)
-         .query`usp_TALENTUS_INS_GradeStep
-                @GradeStepId, 
-                @GradeStepName,
-                @GradeId,
-                @CeilingStepFlag,
-                @GradeStepSequence,
-                @EffectiveStartDate,
-                @EffectiveEndDate`;
+      const pool =  await connector.getConnection(ctx);            
+      for(const step of steps)
+      {
+       const result = await pool.request()
+             .input('GradeId', mssql.BigInt, step.GradeId)
+             .input('GradeStepId', mssql.BigInt, step.GradeStepId)
+             .input('EffectiveStartDate', mssql.VarChar(10), step.EffectiveStartDate)
+             .input('EffectiveEndDate', mssql.VarChar(10), step.EffectiveEndDate)
+             .input('GradeStepName', mssql.VarChar(240), step.GradeStepName)
+             .input('GradeStepSequence', mssql.Int, step.GradeStepSequence)
+             .input('CeilingStepFlag', mssql.VarChar(5), step.CeilingStepFlag)
+             .query`usp_TALENTUS_INS_GradeStep
+                   @GradeStepId, 
+                   @GradeStepName,
+                   @GradeId,
+                   @CeilingStepFlag,
+                   @GradeStepSequence,
+                   @EffectiveStartDate,
+                   @EffectiveEndDate`;
       
-        Promise.resolve(result).then(function(value) { console.log(value); });
-  
-        return pool;
+              Promise.resolve(result).then(function(value) { console.log(value); });
+        } 
+      return pool;
    } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
 
-const setRate = async (ctx, rate) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
-
+const setRate = async (ctx, rates) => {
   try 
   {
-   const pool =  await new mssql.ConnectionPool(config).connect();        
-   
+   const pool =  await connector.getConnection(ctx);       
+   for(const rate of rates)
+   {
     const result = await pool.request()
        .input('RateId', mssql.BigInt, rate.RateId)
        .input('EffectiveStartDate', mssql.VarChar(10), rate.EffectiveStartDate)
@@ -120,7 +99,7 @@ const setRate = async (ctx, rate) => {
               @LegislativeDataGroupId`;
               
       Promise.resolve(result).then(function(value) { console.log(value); });   
-   
+   }   
   return pool;
  } catch(e) { console.error(e); return Promise.reject(e); } 
 
@@ -128,17 +107,9 @@ const setRate = async (ctx, rate) => {
 
 
 const setRateValue = async (ctx, rateValues) => {
-  const config = {};
-  config.server = ctx.host;
-  config.user = ctx.username;
-  config.password = ctx.password;
-  config.database = ctx.database;
-  config.options = ctx.options;
-  config.pool = ctx.pool;
-
   try 
   {
-   const pool =  await new mssql.ConnectionPool(config).connect();        
+   const pool =  await connector.getConnection(ctx);       
    for(const rateValue of rateValues)
    {
     const result = await pool.request()

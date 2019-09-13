@@ -1,10 +1,13 @@
 const axios = require('axios');
 
-const getEmployees = async (config,offset) => {
+const getEmployees = async (config, offset) => {
     const {baseURL, auth, pagesize} = config;
   
     try {
-          const response = await axios({ method: "GET", url: baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=MaritalStatusLOV,assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.ActionReasonCodeLOV&onlyData=true', 
+          //const restEmployeeAPI = baseURL + "emps?limit=" + pagesize+'&offset='+offset+'&expand=MaritalStatusLOV,assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.ActionReasonCodeLOV&onlyData=true';
+          const restEmployeeAPI = baseURL + 'emps?limit='+pagesize+'&offset='+offset+'&expand=MaritalStatusLOV';
+          console.log(restEmployeeAPI);
+          const response = await axios({ method: "GET", url: restEmployeeAPI, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -17,16 +20,19 @@ const getEmployees = async (config,offset) => {
     } catch(e){  console.log(e); return {}; }
   }
 
-const getAssignment = async (config, link) => 
+const getAssignment = async(config, personId) => 
 {
     //console.log(link);
-    const {auth} = config;
+    const {baseURL,auth} = config;
     try{
-          const response = await axios({ method: "GET", url: link, 
+          //const url = href+'?expand=assignmentDFF,assignmentDFF.LVVO_PROGRBENEFASG,PersonTypeIdLOV,ActionReasonCodeLOV&onlyData=true';
+          let url = baseURL+'emps?q=PersonId='+personId+'&expand=assignments,assignments.assignmentDFF,assignments.assignmentDFF.LVVO_PROGRBENEFASG,assignments.PersonTypeIdLOV,assignments.ActionReasonCodeLOV&totalResults=true&onlyData=true';
+          //console.log(url);
+          const response = await axios({ method: "GET", url: url, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                //'Content-Type': 'application/json'
             }
           });
     
@@ -36,25 +42,23 @@ const getAssignment = async (config, link) =>
      catch(e){ console.log(e); return {}; }
 }
 
-const getDirectReports = async(config) => {
-  const {baseURL, auth} = config;
-}
-
 
 const getPublicWorker = async(config, personId) => {
   const {baseURL, auth} = config;
   try{
-        const response = await axios({ method: "GET", url: baseURL + 'publicWorkers/'+ personId +'?field=WorkerNumber&expand=assignments&onlyData=true', 
+        const restPublicWorkerAPI = baseURL + 'publicWorkers/'+ personId +'?expand=assignments&onlyData=true';
+        //console.log('PublicWorker API: ', restPublicWorkerAPI);
+        const response = await axios({ method: "GET", url: restPublicWorkerAPI, 
         auth: {username: auth.username, password: auth.password},
-        headers: {
-            'Accept': 'application/json',
-            //'Content-Type': 'application/json'
-        }
-      });
+               headers: {
+                 'Accept': 'application/json',
+                 //'Content-Type': 'application/json'
+               }
+        });
 
-    //console.log(response.data.items || {}); 
+    //console.log(response.data || {}); 
     return response.data; 
-  } catch(e) { }
+  } catch(e) { console.log(e); return {}; }
  //publicWorkers/{100000014883613}?expand=assignments
 }
 
@@ -62,6 +66,5 @@ const getPublicWorker = async(config, personId) => {
 module.exports = {
     getEmployees: getEmployees,
     getAssignment: getAssignment,
-    getDirectReports: getDirectReports,
     getPublicWorker: getPublicWorker
 };

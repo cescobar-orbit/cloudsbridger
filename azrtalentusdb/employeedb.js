@@ -2,15 +2,9 @@
 const mssql = require('mssql');
 const connector = require('./connection.js');
 
- 
-const setPerson = async (ctx, person) => {
-    
-    try
-    {
-     const pool = await connector.getConnection(ctx);
-     //for(const person of employees)
-     //{
-       const result = await pool.request()
+
+const setPersonEntry = async(pool, person) => {
+  let result = await pool.request()
                          .input('PersonId', mssql.BigInt, person.PersonId)
                          .input('PersonNumber', mssql.VarChar(30), person.PersonNumber)
                          .input('FirstName', mssql.VarChar(150), person.FirstName)
@@ -31,9 +25,9 @@ const setPerson = async (ctx, person) => {
                          .input('Gender', mssql.VarChar(30), person.Gender)
                          .input('MaritalStatusCode', mssql.VarChar(30), person.MaritalStatus)
                          .input('MaritalStatusDesc', mssql.VarChar(100), person.MaritalStatusDesc)
-                         .input('NationalId', mssql.BigInt, person.NationalId)
+                         .input('NationalId', mssql.VarChar(30), person.NationalId)
                          .input('NationalIdCountry', mssql.VarChar(30), person.NationalIdCountry)
-                         .input('NationalIdType', mssql.BigInt, person.NationalIdType)
+                         .input('NationalIdType', mssql.VarChar(30), person.NationalIdType)
                          .input('NationalIdExpirationDate', mssql.VarChar(10), person.NationalIdExpirationDate)
                          .input('AddressLine1', mssql.VarChar(240), person.AddressLine1)
                          .input('AddressLine2', mssql.VarChar(240), person.AddressLine2)
@@ -109,25 +103,16 @@ const setPerson = async (ctx, person) => {
                                     @CreationDate,
                                     @LastUpdateDate`;
         
-        Promise.resolve(result).then(value => { console.log(value); });                           
-      //}
-     return pool;
-
-    } catch(e) { console.error(e); return Promise.reject(e); } 
+        Promise.resolve(result).then(value => { console.log(value); });
 }
 
-const setEmployee = async (ctx, emp) => {
- 
-  try
-  {
-   const pool = await connector.getConnection(ctx);
-   //for(const emp of employees)
-   //{
-     const result = await pool.request()
+const setEmployeeEntry = async(pool, emp) => {
+  let result = await pool.request()
                        .input('EventId', mssql.VarChar(10), 'UNKNOWN')
                        .input('PersonNumber', mssql.VarChar(30), emp.PersonNumber)
                        .input('EffectiveStartDate', mssql.VarChar(10), emp.EffectiveStartDate)
                        .input('EffectiveEndDate', mssql.VarChar(10), emp.EffectiveEndDate)
+                       .input('EffectiveDate', mssql.VarChar(10), null)
                        .input('WorkerType', mssql.VarChar(30), emp.WorkerType)
                        .input('PeriodType', mssql.VarChar(10), emp.PeriodType)
                        .input('UserName', mssql.VarChar(100), emp.UserName)
@@ -154,6 +139,7 @@ const setEmployee = async (ctx, emp) => {
                                   @PersonNumber,
                                   @EffectiveStartDate, 
                                   @EffectiveEndDate,
+                                  @EffectiveDate,
                                   @WorkerType,
                                   @PeriodType,
                                   @UserName,
@@ -177,18 +163,31 @@ const setEmployee = async (ctx, emp) => {
                                   @LastUpdateDate`;
       
       Promise.resolve(result).then( value => { console.log(value); });                           
-    //}
-   return pool;
-  } catch(e) { console.error(e); return Promise.reject(e); } 
+}
+ 
+const setEmployee = async (ctx, emps) => {
+    
+    try
+    {
+     const pool = await connector.getConnection(ctx);
+     for(let emp of emps)
+     {
+         await setPersonEntry(pool, emp);
+         await setEmployeeEntry(pool, emp);
+     }
+     return pool;
+
+    } catch(e) { console.error(e); return Promise.reject(e); } 
 }
 
-const setWorkerNumber = async (ctx, wrk) => {
+
+const setWorkerNumber = async (ctx, workers) => {
   try
   {
    const pool = await connector.getConnection(ctx);
-   //for(const wrk of workerNumbers)
-    //{
-     const result = await pool.request()
+   for(let wrk of workers)
+    {
+     let result = await pool.request()
                      .input('PersonNumber', mssql.VarChar(30), wrk.PersonNumber)
                      .input('WorkerNumber', mssql.VarChar(30), wrk.WorkerNumber)
                     
@@ -198,18 +197,18 @@ const setWorkerNumber = async (ctx, wrk) => {
     
     Promise.resolve(result).then(value => { console.log(value); });                           
     return pool;
-   //}
+   }
   } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
 
-const setPersonType = async(ctx, pt) =>{
+const setPersonType = async(ctx, personTypes) =>{
   try
   {
    const pool = await connector.getConnection(ctx);
-   //for(const pt of personTypes)
-   //{
-    const result = await pool.request()
+   for(let pt of personTypes)
+   {
+    let result = await pool.request()
                      .input('PersonTypeId', mssql.BigInt, pt.PersonTypeId)
                      .input('SystemPersonType', mssql.VarChar(80), pt.SystemPersonType)
                      .input('UserPersonType', mssql.VarChar(30), pt.UserPersonType)
@@ -224,7 +223,7 @@ const setPersonType = async(ctx, pt) =>{
                                @DefaultFlag`;
     
       Promise.resolve(result).then(value => { console.log(value); });                           
-  //}
+  }
   return pool;
  } catch(e) { console.error(e); return Promise.reject(e);} 
 }
@@ -259,9 +258,12 @@ const setPersonContact = async(ctx, contacts) => {
     { 
       const pool = await connector.getConnection(ctx);
 
-      for(const contact of contacts)
+      for(let contact of contacts)
        {
-        const result = await pool.request()
+        let areaCode = (contact.ConAreaCode != '') ? contact.ConAreaCode : null;
+        let countryCodeNumber = (contact.ConCountryCodeNumber != '') ? contact.ConCountryCodeNumber : null;
+        let sequenceNumber  = (contact.ConSequenceNumber != '') ? contact.ConSequenceNumber : null      
+        let result = await pool.request()
                      .input('PersonId', mssql.BigInt, contact.PerID)
                      .input('ContactId', mssql.BigInt, contact.ConPerID)
                      .input('EffectiveStartDate', mssql.VarChar(10), contact.ConEffectiveStartDate)
@@ -277,15 +279,14 @@ const setPersonContact = async(ctx, contacts) => {
                      .input('MaritalStatus', mssql.VarChar(30), contact.ConMaritalStatus)
                      .input('BeneficiaryIndicator', mssql.Char(5), contact.ConBeneficiaryIndicator)
                      .input('Prefix', mssql.Char(5), contact.ConPrefix)
-                     .input('SequenceNumber', mssql.Int, contact.ConSequenceNumber)
+                     .input('SequenceNumber', mssql.Int, sequenceNumber)
                      .input('AddressLine1', mssql.VarChar(100), contact.ConAddressLine1)
                      .input('AddressLine2', mssql.VarChar(100), contact.ConAddressLine2)
                      .input('AddressLine3', mssql.VarChar(100), contact.ConAddressLine3)
                      .input('PhoneNumber', mssql.VarChar(50), contact.ConPhoneNumber)
-                     .input('CountryPhoneNumber', mssql.Int, contact.ConPhoneNumber)
-                     .input('AreaCode', mssql.Int, contact.ConAreaCode)
-                     .input('EmergencyContact', mssql.Char(3), contact.ConEmergencyContact)
-                    
+                     .input('CountryCodeNumber', mssql.Int, countryCodeNumber)
+                     .input('AreaCode', mssql.Int, areaCode)
+                     .input('EmergencyContact', mssql.Char(3), contact.ConEmergencyContact)                    
                      .query`usp_TALENTUS_INS_PersonContact 
                               @PersonId,
                               @ContactId,
@@ -307,7 +308,7 @@ const setPersonContact = async(ctx, contacts) => {
                               @AddressLine2,
                               @AddressLine3,
                               @PhoneNumber,
-                              @CountryPhoneNumber,
+                              @CountryCodeNumber,
                               @AreaCode,
                               @EmergencyContact`;
     
@@ -323,9 +324,9 @@ const setPersonDetail = async (ctx, personDetails) => {
   {
     const pool = await connector.getConnection(ctx);
 
-    for(const pd of personDetails)
+    for(let pd of personDetails)
       {
-        const result = await pool.request()
+        let result = await pool.request()
                      .input('PersonNumber', mssql.VarChar(30), pd.PerNumber)
                      .input('BloodType', mssql.VarChar(5), pd.PerBloodType)
                      .input('DateOfDeath', mssql.VarChar(10), pd.DateOfDeath)
@@ -345,12 +346,35 @@ const setPersonDetail = async (ctx, personDetails) => {
 
 }
 
+const setPersonBankAccount = async(ctx, personBankAccts) => {
+   try{
+     const pool = await connector.getConnection(ctx);
+     for(let pba of personBankAccts)
+     {
+      let result = await pool.request()
+                      .input('PersonNumber', mssql.VarChar(30), pba.PersonNumber)
+                      .input('BankAccountNumber', mssql.VarChar(5), pba.BankAccountNumber)
+                      .input('BankAccountType', mssql.VarChar(10), pba.BankAccountType)
+                      .input('BankRoute', mssql.VarChar(10), pba.BankRoute)
+
+                     .query`usp_TALENTUS_INS_PersonBankAccount
+                              @PersonNumber,
+                              @BankAccountNumber,
+                              @BankAccountType,
+                              @BankRoute`;
+                              
+          Promise.resolve(result).then(value => { console.log(value); });               
+     }
+     return pool;
+   } catch(e) { console.error(e); return Promise.reject(e); } 
+}
+
 module.exports = {
-    setPerson: setPerson,
+    //setPerson: setPerson,
     setEmployee: setEmployee,
     setWorkerNumber: setWorkerNumber,
-    setDirectReports: setDirectReports,
     setPersonType: setPersonType,
     setPersonContact: setPersonContact,
-    setPersonDetail: setPersonDetail
+    setPersonDetail: setPersonDetail,
+    setPersonBankAccount: setPersonBankAccount
 }

@@ -51,12 +51,13 @@ const setJob = async (ctx, jobs) => {
     } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
-const setJobFamily = async (ctx, JobFamily) => {
+const setJobFamily = async (ctx, JobFamilies) => {
     try
     {
-        const pool = await connector.getConnection(ctx);
-        
-            const result = pool.request()
+      const pool = await connector.getConnection(ctx);
+      for(const jobFamily of JobFamilies)
+      {  
+        const result = await pool.request()
                     .input('JobFamilyId', mssql.BigInt, jobFamily.JobFamilyId)
                     .input('JobFamilyName', mssql.VarChar(240), jobFamily.JobFamilyName)
                     .input('JobFamilyCode', mssql.VarChar(), jobFamily.JobFamilyCode)
@@ -76,10 +77,11 @@ const setJobFamily = async (ctx, JobFamily) => {
                             @CreationDate,
                             @LastUpdateDate`;
 
-                Promise.resolve(result).then(value => { console.log(value); });
-            return pool;
-        }catch(e) { console.error(e); }
-    }
+            Promise.resolve(result).then(value => { console.log(value); });
+      }
+      return pool;
+    }catch(e) { console.error(e); }
+}
  
     module.exports = {
      setJob: setJob,

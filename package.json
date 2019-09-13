@@ -7,7 +7,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "SET NODE_ENV=staging & node --max_old_space_size=500096 server.js"
+    "start": "SET NODE_ENV=staging & node --max_old_space_size=4000768 server.js"
   },
   "repository": {
     "type": "git",

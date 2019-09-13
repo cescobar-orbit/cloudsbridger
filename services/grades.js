@@ -4,7 +4,7 @@ const getGrades = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "grades?limit=" + pagesize+'&offset='+offset, 
+          const response = await axios({ method: "GET", url: baseURL + "grades?expand=steps&limit=" + pagesize+'&offset='+offset+'&onlyData=true', 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',
@@ -40,7 +40,7 @@ const getRates = async (config, offset) =>
 {
     const {baseURL, auth, pagesize} = config;
       try{
-          const response = await axios({ method: "GET", url: baseURL + "gradeRates?limit=" + pagesize+'&offset='+offset, 
+          const response = await axios({ method: "GET", url: baseURL + "gradeRates?expand=rateValues&limit=" + pagesize+'&offset='+offset, 
             auth: {username: auth.username, password: auth.password},
             headers: {
                 'Accept': 'application/json',

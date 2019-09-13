@@ -72,7 +72,8 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
   try
   {
    const pool = await connector.getConnection(ctx);
-
+   const treeCode = departmentNodes.TreeCode;
+   delete departmentNodes.TreeCode;
    for(const department of departmentNodes)
    {
      const result = await pool.request()
@@ -80,11 +81,13 @@ const setDepartmentTree = async (ctx, departmentNodes) => {
                        .input('DepartmentName', mssql.VarChar(150), department.DepartmentName[0])
                        .input('ParentDepartmentId', mssql.BigInt, department.ParentDepartmentId[0])
                        .input('ParentDepartmentName', mssql.VarChar(150), department.ParentDepartmentName[0]) 
+                       .input('TreeCode', mssql.VarChar(50), treeCode)
                        .query`usp_TALENTUS_INS_DepartmentTree
                                   @DepartmentId,
                                   @DepartmentName,
                                   @ParentDepartmentId,
-                                  @ParentDepartmentName`;
+                                  @ParentDepartmentName,
+                                  @TreeCode`;
       
       Promise.resolve(result).then(function(value) { console.log(value); });                           
     }

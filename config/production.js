@@ -4,7 +4,8 @@ const config = {
             auth:{
                 username: "Integration.Specialist",
                 password: "Welcome2019"
-              }
+              },
+            pagesize: 100
           },
         dbConfig:{
             host: "sql-int-tibco-pass.database.windows.net",
