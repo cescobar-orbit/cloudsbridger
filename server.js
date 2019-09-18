@@ -350,36 +350,36 @@ app.get('/employees', async (req, res) => {
         {
           const maritalStatusLov = emp.MaritalStatusLOV.filter( ms => { return ms.LookupCode == emp.MaritalStatus; });
           Object.assign(emp, {MaritalStatusDesc: maritalStatusLov[0].Meaning});
-          setTimeout(async()=> { console.log('Take a nap of 120s before PublicWorker');
-             let publicWorker = await employee.getPublicWorker(cfg.hcmAPI, emp.PersonId);
-             let workerNumber = publicWorker.assignments[0].WorkerNumber;
+          try{
+             let publicWorkerItems = await employee.getPublicWorker(cfg.hcmAPI, emp.PersonId);
+             let publicWorkerAsg = publicWorkerItems.items[0].assignments[0];
+             let workerNumber = publicWorkerAsg.WorkerNumber;
              console.log('PersonId: ', emp.PersonId, 'WorkerNumber: ', workerNumber);
              if(workerNumber) {
-               let wrk = {PersonNumber: emp.PersonNumber, WorkerNumber: workerNumber};
+               let wrk = {PesonId: emp.PersonId, PersonNumber: emp.PersonNumber, WorkerNumber: workerNumber};
                workers.push(wrk);
              }
              Object.assign(emp, {WorkerNumber: workerNumber}); 
              emps.push(emp);
-            }, 12000);
+            } catch(e){ console.error(e); }  
         }
       }
       pageNumber = pageNumber + 1;
       offset = (pageNumber * cfg.hcmAPI.pagesize);
  
       if(!hasMore) { 
+        const connEmp = await employeedb.setEmployee(cfg.dbConfig, emps);
+        Promise.resolve(connEmp).then( ce => { ce.close(); });
         console.timeEnd('Employees');
+
+        if(workers && workers.length > 0) {
+          const connWorkers = await employeedb.setWorkerNumber(cfg.dbConfig, workers);
+          Promise.resolve(connWorkers).then( cwrk => { cwrk.close(); });
+        }
+        console.log('Employees: ', emps.length, ' Workers: ', workers.length);
         break; 
       }
     } while(hasMore);
-
-    const connEmp = await employeedb.setEmployee(cfg.dbConfig, emps);
-    Promise.resolve(connEmp).then( ce => { ce.close(); });
-          
-    if(workers && workers.length > 0) {
-      const connWorkers = await employeedb.setWorkerNumber(cfg.dbConfig, workers);
-      Promise.resolve(connWorkers).then( cwrk => { cwrk.close(); });
-    }
-    console.log('Employees: ', emps.length, ' Workers: ', workers.length);
 });
 
 

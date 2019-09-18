@@ -46,7 +46,7 @@ const getAssignment = async(config, personId) =>
 const getPublicWorker = async(config, personId) => {
   const {baseURL, auth} = config;
   try{
-        const restPublicWorkerAPI = baseURL + 'publicWorkers/'+ personId +'?expand=assignments&onlyData=true';
+        const restPublicWorkerAPI = baseURL + 'publicWorkers?q=PersonId='+ personId +'&expand=assignments&onlyData=true';
         //console.log('PublicWorker API: ', restPublicWorkerAPI);
         const response = await axios({ method: "GET", url: restPublicWorkerAPI, 
         auth: {username: auth.username, password: auth.password},
