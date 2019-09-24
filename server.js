@@ -15,6 +15,7 @@ const position = require('./services/positions');
 const positiondb = require('./azrtalentusdb/positiondb');
 const employee = require('./services/employees');
 const employeedb = require('./azrtalentusdb/employeedb');
+const assignment = require('./services/assignments');
 const assignmentdb = require('./azrtalentusdb/assignmentdb');
 
 const port = 5000;
@@ -330,7 +331,6 @@ app.get('/employees', async (req, res) => {
     let offset = 0;
     let pageNumber = 1;
     let hasMore = true;    
-    let personTypes = [];
     let emps = [];
     let workers = [];  
     
@@ -404,7 +404,7 @@ app.get('/empassignments', async (req, res) => {
       for(let emp of employees)
       {
         //let hrefObj = emp.links.filter(o => { return o.name == 'assignments' });
-        let asgResponse = await employee.getAssignment(cfg.hcmAPI, emp.PersonId);
+        let asgResponse = await assignment.getAssignment(cfg.hcmAPI, emp.PersonId);
         let totalResults = asgResponse.totalResults;
         let items = asgResponse.items;
         let data = items[0].assignments;
@@ -412,12 +412,6 @@ app.get('/empassignments', async (req, res) => {
         //console.log(data);
         for(let asg of data)
         {
-          for(let indexPt=0; indexPt < asg.PersonTypeIdLOV.length; indexPt++)
-          {
-           let pt = asg.PersonTypeIdLOV[indexPt];
-           personTypes.push(pt);
-          }
-
          console.log("> Assignment.ActionReasonCode: ", asg.ActionReasonCode, ' pagenumber#: ', pageNumber, ' offset: ', offset, ' TotalResult: ', totalResults, ' count: ', assignments.length);
          
          if(asg.ActionReasonCode)
@@ -443,7 +437,8 @@ app.get('/empassignments', async (req, res) => {
          }
          Object.assign(asgDff, {AssignmentNumber: asg.AssignmentNumber, BenefitPlan: benefitPlan[0].Description});
          assignmentsDFF.push(asgDff);
-        } 
+        }
+        setTimeout(() => { console.log('Taking a nap 30s')}, 300000); 
        }
     }
     pageNumber = pageNumber + 1;
@@ -456,13 +451,13 @@ app.get('/empassignments', async (req, res) => {
         } catch(err) { console.error(err); }
 
         try{
-              const connAsgDff = await assignmentdb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
-              Promise.resolve(connAsgDff).then( asgd => { asgd.close();  });
-         } catch(e) { console.error(e); }
+            const connAsgDff = await assignmentdb.setAssignmentDFF(cfg.dbConfig, assignmentsDFF);
+            Promise.resolve(connAsgDff).then( asgd => { asgd.close();  });
+        } catch(e) { console.error(e); }
 
-         console.timeEnd('Employees Assignments'); 
-         setTimeout(()=> {console.log('> Assignments total: ', assignments.length); }, 50000); 
-         break; 
+        console.timeEnd('Employees Assignments'); 
+        setTimeout(()=> {console.log('> Assignments total: ', assignments.length); }, 50000); 
+        break; 
     }
   } while(hasMore);
          
@@ -598,6 +593,37 @@ app.get('/personBankAcct', async (req, res) => {
        console.timeEnd('PersonBankAccount'); 
      } 
    });
+});
+
+app.get('/personTypes', async(req, res) => {
+  let offset = 0;
+  let pageNumber = 1;
+  let hasMore = true;   
+
+  console.time('PersonTypes'); 
+  do 
+  {
+    console.log('PersonTypes offset: ', offset, 'PageNumber: ', pageNumber);
+    let response = await assignment.getPersonTypes(cfg.hcmAPI, offset);
+    let personTypes = response.items;
+    hasMore = response.hasMore;
+  
+    if(personTypes && personTypes.length > 0) 
+    {
+      connPt = await assignmentdb.setPersonType(cfg.dbConfig, personTypes);
+      Promise.resolve(connPt).then( p => { p.close(); });
+    }
+    
+    pageNumber = pageNumber + 1;
+    offset = (pageNumber * cfg.hcmAPI.pagesize);
+
+    if(!hasMore) {
+        console.timeEnd('PersonTypes'); 
+        setTimeout(()=> {console.log('> PersonTypes total: ', personTypes.length); }, 50000); 
+        break; 
+    }
+  } while(hasMore);
+    
 });
 
 app.listen(port, () => console.log('connecting to HCM End-points') );

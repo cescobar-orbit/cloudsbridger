@@ -201,33 +201,6 @@ const setWorkerNumber = async (ctx, workers) => {
   } catch(e) { console.error(e); return Promise.reject(e); }  
 }
 
-
-const setPersonType = async(ctx, personTypes) =>{
-  try
-  {
-   const pool = await connector.getConnection(ctx);
-   for(let pt of personTypes)
-   {
-    let result = await pool.request()
-                     .input('PersonTypeId', mssql.BigInt, pt.PersonTypeId)
-                     .input('SystemPersonType', mssql.VarChar(80), pt.SystemPersonType)
-                     .input('UserPersonType', mssql.VarChar(30), pt.UserPersonType)
-                     .input('ActiveFlag', mssql.Char(5), pt.ActiveFlag)
-                     .input('DefaultFlag', mssql.Char(5), pt.DefaultFlag)
-                    
-                     .query`usp_TALENTUS_INS_PersonType 
-                               @PersonTypeId, 
-                               @SystemPersonType, 
-                               @UserPersonType,                            
-                               @ActiveFlag,
-                               @DefaultFlag`;
-    
-      Promise.resolve(result).then(value => { console.log(value); });                           
-  }
-  return pool;
- } catch(e) { console.error(e); return Promise.reject(e);} 
-}
-
 const setDirectReports = async (ctx, directReports) => {
   try
   {
@@ -373,7 +346,6 @@ module.exports = {
     //setPerson: setPerson,
     setEmployee: setEmployee,
     setWorkerNumber: setWorkerNumber,
-    setPersonType: setPersonType,
     setPersonContact: setPersonContact,
     setPersonDetail: setPersonDetail,
     setPersonBankAccount: setPersonBankAccount
