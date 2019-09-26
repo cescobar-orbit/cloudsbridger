@@ -108,7 +108,7 @@ const setPersonEntry = async(pool, person) => {
 
 const setEmployeeEntry = async(pool, emp) => {
   let result = await pool.request()
-                       .input('EventId', mssql.VarChar(10), 'UNKNOWN')
+                       .input('EventId', mssql.VarChar(10), 'EMPUPDATE')
                        .input('PersonNumber', mssql.VarChar(30), emp.PersonNumber)
                        .input('EffectiveStartDate', mssql.VarChar(10), emp.EffectiveStartDate)
                        .input('EffectiveEndDate', mssql.VarChar(10), emp.EffectiveEndDate)
